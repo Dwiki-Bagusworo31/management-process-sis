@@ -1060,9 +1060,10 @@
     }
 
     // PROSES LUPA SANDI
+    
     async function handleSISForgotPassword() {
         if (!sisSupabase) {
-            showLoginMessage('Koneksi sistem belum siap. Muat ulang halaman lalu coba lagi.');
+            showLoginMessage('Koneksi Supabase belum siap. Muat ulang halaman lalu coba lagi.');
             return;
         }
 
@@ -1076,6 +1077,7 @@
         }
 
         const forgotButton = document.getElementById('forgotPasswordButton');
+
         if (forgotButton) {
             forgotButton.disabled = true;
             forgotButton.textContent = 'Mengirim...';
@@ -1087,15 +1089,26 @@
             });
 
             if (error) {
-                console.error('Permintaan reset sandi gagal:', error.message);
-                showLoginMessage('Gagal meminta reset sandi. Periksa konfigurasi URL Supabase.');
+                console.error('RESET PASSWORD ERROR:', error);
+
+                showLoginMessage(
+                    'Reset sandi gagal: ' +
+                    error.message +
+                    ' (Kode HTTP: ' + (error.status || 'tidak diketahui') + ')'
+                );
                 return;
             }
 
-            showLoginMessage('Jika email terdaftar, periksa inbox dan folder spam untuk tautan reset sandi.');
+            showLoginMessage(
+                'Permintaan reset sandi berhasil dikirim. Periksa inbox dan folder spam.'
+            );
         } catch (error) {
-            console.error('Kesalahan reset sandi:', error);
-            showLoginMessage('Terjadi kendala koneksi. Periksa internet lalu coba lagi.');
+            console.error('RESET PASSWORD EXCEPTION:', error);
+
+            showLoginMessage(
+                'Kesalahan reset sandi: ' +
+                (error.message || 'Koneksi gagal.')
+            );
         } finally {
             if (forgotButton) {
                 forgotButton.disabled = false;
@@ -1103,6 +1116,7 @@
             }
         }
     }
+
 
     // HUBUNGKAN TOMBOL LUPA SANDI
     document.getElementById('forgotPasswordButton')?.addEventListener('click', handleSISForgotPassword);
