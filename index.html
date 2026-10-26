@@ -1125,10 +1125,16 @@
             });
 
             if (error) {
-                console.error('Reset sandi gagal:', error.message);
-                showLoginMessage('Gagal mengirim tautan reset sandi. Periksa konfigurasi Supabase.');
-                return;
-            }
+    console.error('Permintaan reset sandi gagal:', error);
+
+    showLoginMessage(
+        'Reset sandi gagal: ' +
+        (error.message || 'Penyebab tidak diketahui') +
+        ' (Kode: ' + (error.status || '-') + ')'
+    );
+
+    return;
+}
 
             showLoginMessage('Jika email terdaftar, periksa inbox dan folder spam untuk tautan reset sandi.');
         } catch (error) {
