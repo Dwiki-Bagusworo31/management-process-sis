@@ -1,6 +1,4 @@
-
 <script>
-    // KONFIGURASI SUPABASE
     const SUPABASE_URL = "https://maveqvmzydqvroohepum.supabase.co";
     const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_8pydnk2otFO-29gT0ECYAw_HLQ435mX";
 
@@ -8,22 +6,25 @@
     let currentSISUser = null;
 
     function showLoginMessage(message) {
-        const el = document.getElementById('loginMessage');
+        const el = document.getElementById("loginMessage");
         if (!el) return;
         el.textContent = message;
-        el.classList.remove('hidden');
+        el.classList.remove("hidden");
     }
 
     function showSISLogin() {
-        document.getElementById('loginScreen')?.classList.remove('hidden');
-        document.getElementById('sisApp')?.classList.add('hidden');
+        document.getElementById("loginScreen")?.classList.remove("hidden");
+        document.getElementById("sisApp")?.classList.add("hidden");
     }
 
     function showSISApp() {
-        document.getElementById('loginScreen')?.classList.add('hidden');
-        document.getElementById('sisApp')?.classList.remove('hidden');
-        const emailElement = document.getElementById('sisUserEmail');
-        if (emailElement) emailElement.textContent = currentSISUser?.email || '';
+        document.getElementById("loginScreen")?.classList.add("hidden");
+        document.getElementById("sisApp")?.classList.remove("hidden");
+
+        const emailElement = document.getElementById("sisUserEmail");
+        if (emailElement) {
+            emailElement.textContent = currentSISUser?.email || "";
+        }
     }
 
     async function verifySISSession(session) {
@@ -34,21 +35,26 @@
         }
 
         const { data: profile, error } = await sisSupabase
-            .from('profiles')
-            .select('role')
-            .eq('id', session.user.id)
+            .from("profiles")
+            .select("role")
+            .eq("id", session.user.id)
             .maybeSingle();
 
         if (error) {
-            console.error('Pemeriksaan profil gagal:', error);
-            showLoginMessage('Profil akun gagal diperiksa. Periksa tabel profiles dan policy RLS.');
+            console.error("Pemeriksaan profil gagal:", error);
+            showLoginMessage(
+                "Profil akun gagal diperiksa. Periksa tabel profiles dan policy RLS."
+            );
             showSISLogin();
             return false;
         }
 
-        if (!profile || !['admin', 'team'].includes(profile.role)) {
+        if (!profile || !["admin", "team"].includes(profile.role)) {
             await sisSupabase.auth.signOut();
-            showLoginMessage('Akun belum memiliki role admin atau team pada tabel profiles.');
+            currentSISUser = null;
+            showLoginMessage(
+                "Akun belum memiliki role admin atau team pada tabel profiles."
+            );
             showSISLogin();
             return false;
         }
@@ -58,51 +64,69 @@
         return true;
     }
 
-    async function handleSISForgotPassword() {
-        const emailInput = document.getElementById('loginEmail');
-        const email = emailInput?.value.trim() || '';
-        const button = document.getElementById('forgotPasswordButton');
+    async function handleSISForgotPassword(event) {
+        event?.preventDefault();
 
-        document.getElementById('loginMessage')?.classList.add('hidden');
+        const emailInput = document.getElementById("loginEmail");
+        const email = emailInput?.value.trim() || "";
+        const button = document.getElementById("forgotPasswordButton");
+
+        document.getElementById("loginMessage")?.classList.add("hidden");
 
         if (!sisSupabase) {
-            showLoginMessage('Koneksi Supabase belum siap. Muat ulang halaman.');
+            showLoginMessage("Koneksi Supabase belum siap. Muat ulang halaman.");
             return;
         }
 
         if (!email) {
-            showLoginMessage('Masukkan email terlebih dahulu untuk reset sandi.');
+            showLoginMessage("Masukkan email terlebih dahulu untuk reset sandi.");
+            emailInput?.focus();
+            return;
+        }
+
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            showLoginMessage("Format email belum benar.");
             emailInput?.focus();
             return;
         }
 
         if (button) {
             button.disabled = true;
-            button.textContent = 'Mengirim...';
+            button.textContent = "Mengirim...";
         }
 
         try {
+            const redirectTo = window.location.origin + window.location.pathname;
+
             const { error } = await sisSupabase.auth.resetPasswordForEmail(email, {
-                redirectTo: window.location.origin + '/'
+                redirectTo
             });
 
             if (error) {
-                console.error('Reset sandi gagal:', error);
+                console.error("Reset sandi gagal:", error);
                 showLoginMessage(
-                    'Reset sandi gagal: ' + error.message +
-                    ' (Kode: ' + (error.status || '-') + ')'
+                    "Reset sandi gagal: " +
+                    error.message +
+                    " (Kode: " +
+                    (error.status || "-") +
+                    ")"
                 );
                 return;
             }
 
-            showLoginMessage('Permintaan reset sandi diproses. Periksa inbox dan folder spam.');
+            showLoginMessage(
+                "Permintaan reset sandi berhasil dikirim jika email terdaftar. " +
+                "Periksa inbox dan folder spam."
+            );
         } catch (error) {
-            console.error('Kesalahan reset sandi:', error);
-            showLoginMessage('Kesalahan koneksi saat meminta reset sandi.');
+            console.error("Kesalahan reset sandi:", error);
+            showLoginMessage(
+                "Kesalahan koneksi saat meminta reset sandi. Coba kembali."
+            );
         } finally {
             if (button) {
                 button.disabled = false;
-                button.textContent = 'Lupa Sandi?';
+                button.textContent = "Lupa Sandi?";
             }
         }
     }
@@ -110,7 +134,7 @@
     async function logoutSIS() {
         if (!sisSupabase) return;
 
-        const button = document.getElementById('logoutButton');
+        const button = document.getElementById("logoutButton");
         if (button) button.disabled = true;
 
         try {
@@ -118,28 +142,31 @@
             if (error) throw error;
 
             currentSISUser = null;
-            const passwordInput = document.getElementById('loginPassword');
-            if (passwordInput) passwordInput.value = '';
+
+            const passwordInput = document.getElementById("loginPassword");
+            if (passwordInput) passwordInput.value = "";
 
             showSISLogin();
-            showToast('Berhasil keluar dari sistem.');
+            showToast("Berhasil keluar dari sistem.");
         } catch (error) {
-            console.error('Logout gagal:', error);
-            showToast('Gagal keluar. Periksa koneksi lalu coba lagi.');
+            console.error("Logout gagal:", error);
+            showToast("Gagal keluar. Periksa koneksi lalu coba lagi.");
         } finally {
             if (button) button.disabled = false;
         }
     }
 
-    document.addEventListener('DOMContentLoaded', async () => {
+    document.addEventListener("DOMContentLoaded", async () => {
         if (!window.supabase?.createClient) {
-            showLoginMessage('Komponen Supabase gagal dimuat. Periksa koneksi internet.');
+            showLoginMessage(
+                "Komponen Supabase gagal dimuat. Periksa koneksi internet."
+            );
             return;
         }
 
         sisSupabase = window.supabase.createClient(
-            SUPABASE_URL.replace(/\/+$/, ''),
-            SUPABASE_PUBLISHABLE_KEY.trim(),
+            SUPABASE_URL,
+            SUPABASE_PUBLISHABLE_KEY,
             {
                 auth: {
                     autoRefreshToken: true,
@@ -149,16 +176,26 @@
             }
         );
 
-        document.getElementById('loginForm')?.addEventListener('submit', async (event) => {
+        const loginForm = document.getElementById("loginForm");
+
+        loginForm?.addEventListener("submit", async (event) => {
             event.preventDefault();
 
-            const button = document.getElementById('loginSubmit');
-            const email = document.getElementById('loginEmail').value.trim();
-            const password = document.getElementById('loginPassword').value;
+            const button = document.getElementById("loginSubmit");
+            const email = document.getElementById("loginEmail")?.value.trim() || "";
+            const password = document.getElementById("loginPassword")?.value || "";
 
-            document.getElementById('loginMessage')?.classList.add('hidden');
-            button.disabled = true;
-            button.textContent = 'Memeriksa...';
+            document.getElementById("loginMessage")?.classList.add("hidden");
+
+            if (!email || !password) {
+                showLoginMessage("Masukkan email dan sandi.");
+                return;
+            }
+
+            if (button) {
+                button.disabled = true;
+                button.textContent = "Memeriksa...";
+            }
 
             try {
                 const { data, error } = await sisSupabase.auth.signInWithPassword({
@@ -167,23 +204,29 @@
                 });
 
                 if (error) {
-                    console.error('Login gagal:', error);
-                    showLoginMessage('Login gagal: ' + error.message);
+                    console.error("Login gagal:", error);
+                    showLoginMessage("Login gagal: " + error.message);
                     return;
                 }
 
-                await verifySISSession(data.session);
+                const verified = await verifySISSession(data.session);
+
+                if (!verified) {
+                    await sisSupabase.auth.signOut();
+                }
             } catch (error) {
-                console.error('Kesalahan login:', error);
-                showLoginMessage('Kesalahan koneksi saat login.');
+                console.error("Kesalahan login:", error);
+                showLoginMessage("Kesalahan koneksi saat login.");
             } finally {
-                button.disabled = false;
-                button.textContent = 'Masuk';
+                if (button) {
+                    button.disabled = false;
+                    button.textContent = "Masuk";
+                }
             }
         });
 
-        document.getElementById('forgotPasswordButton')
-            ?.addEventListener('click', handleSISForgotPassword);
+        document.getElementById("forgotPasswordButton")
+            ?.addEventListener("click", handleSISForgotPassword);
 
         try {
             const { data, error } = await sisSupabase.auth.getSession();
@@ -195,13 +238,15 @@
                 showSISLogin();
             }
         } catch (error) {
-            console.error('Pemeriksaan sesi gagal:', error);
-            showLoginMessage('Sesi tidak dapat diperiksa. Muat ulang halaman.');
+            console.error("Pemeriksaan sesi gagal:", error);
+            showLoginMessage(
+                "Sesi tidak dapat diperiksa. Muat ulang halaman."
+            );
             showSISLogin();
         }
 
         sisSupabase.auth.onAuthStateChange((event, session) => {
-            if (event === 'SIGNED_OUT' || !session) {
+            if (event === "SIGNED_OUT" || !session) {
                 currentSISUser = null;
                 showSISLogin();
             }
