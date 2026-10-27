@@ -26,35 +26,19 @@ button:disabled{opacity:.6;cursor:wait}
    <p class="text-xs text-cyan-300 font-semibold mt-1">PT. Sribaru Indah Sejahtera</p>
    <p id="loginSubtitle" class="text-sm text-slate-300 mt-4">Silakan masuk untuk membuka dashboard.</p>
   </div>
-
   <form id="loginForm" class="p-7 space-y-4">
-   <div>
-    <label for="loginEmail" class="block text-xs font-bold mb-1.5">Email</label>
-    <input id="loginEmail" type="email" autocomplete="username" required class="w-full text-sm p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:outline-none" placeholder="nama@perusahaan.com">
-   </div>
-   <div>
-    <label for="loginPassword" class="block text-xs font-bold mb-1.5">Password</label>
-    <input id="loginPassword" type="password" autocomplete="current-password" required class="w-full text-sm p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:outline-none" placeholder="Masukkan password">
-   </div>
+   <div><label for="loginEmail" class="block text-xs font-bold mb-1.5">Email</label><input id="loginEmail" type="email" autocomplete="username" required class="w-full text-sm p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:outline-none" placeholder="nama@perusahaan.com"></div>
+   <div><label for="loginPassword" class="block text-xs font-bold mb-1.5">Password</label><input id="loginPassword" type="password" autocomplete="current-password" required class="w-full text-sm p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:outline-none" placeholder="Masukkan password"></div>
    <p id="loginMessage" role="status" aria-live="polite" class="hidden text-xs font-medium p-3 rounded-xl"></p>
    <button id="loginSubmit" type="submit" class="w-full py-3 rounded-xl text-sm font-bold bg-cyan-600 text-white hover:bg-cyan-700">Masuk</button>
-   <div class="text-center pt-1">
-    <button id="forgotPasswordButton" type="button" class="text-sm font-semibold text-cyan-700 hover:text-cyan-900">Lupa Sandi?</button>
-   </div>
+   <div class="text-center pt-1"><button id="forgotPasswordButton" type="button" class="text-sm font-semibold text-cyan-700 hover:text-cyan-900">Lupa Sandi?</button></div>
    <p class="text-[11px] text-slate-400 text-center pt-2">Akun dibuat melalui Supabase Authentication oleh administrator.</p>
   </form>
-
   <form id="resetPasswordForm" class="p-7 space-y-4 hidden">
    <h2 class="text-lg font-bold text-slate-900">Buat Password Baru</h2>
    <p class="text-xs text-slate-500">Masukkan password baru untuk akun Anda.</p>
-   <div>
-    <label for="newPassword" class="block text-xs font-bold mb-1.5">Password Baru</label>
-    <input id="newPassword" type="password" minlength="8" autocomplete="new-password" required class="w-full text-sm p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:outline-none" placeholder="Minimal 8 karakter">
-   </div>
-   <div>
-    <label for="confirmPassword" class="block text-xs font-bold mb-1.5">Konfirmasi Password Baru</label>
-    <input id="confirmPassword" type="password" minlength="8" autocomplete="new-password" required class="w-full text-sm p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:outline-none" placeholder="Ulangi password baru">
-   </div>
+   <div><label for="newPassword" class="block text-xs font-bold mb-1.5">Password Baru</label><input id="newPassword" type="password" minlength="8" autocomplete="new-password" required class="w-full text-sm p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:outline-none" placeholder="Minimal 8 karakter"></div>
+   <div><label for="confirmPassword" class="block text-xs font-bold mb-1.5">Konfirmasi Password Baru</label><input id="confirmPassword" type="password" minlength="8" autocomplete="new-password" required class="w-full text-sm p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:outline-none" placeholder="Ulangi password baru"></div>
    <p id="resetMessage" role="status" aria-live="polite" class="hidden text-xs font-medium p-3 rounded-xl"></p>
    <button id="resetSubmit" type="submit" class="w-full py-3 rounded-xl text-sm font-bold bg-cyan-600 text-white hover:bg-cyan-700">Simpan Password Baru</button>
    <button id="backToLoginButton" type="button" class="w-full py-2 text-sm font-semibold text-slate-600 hover:text-cyan-700">Kembali ke Login</button>
@@ -67,7 +51,6 @@ button:disabled{opacity:.6;cursor:wait}
   <span id="sisUserEmail" class="font-semibold text-slate-600"></span>
   <button id="logoutButton" type="button" class="rounded-lg bg-slate-900 px-3 py-2 font-bold text-white hover:bg-slate-700">Keluar <i class="fa-solid fa-right-from-bracket ml-1"></i></button>
  </div>
-
  <header class="bg-slate-900 text-white sticky top-0 z-30 shadow-md">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
    <div class="flex items-center gap-3 cursor-pointer" onclick="switchView('dashboard')">
@@ -81,7 +64,6 @@ button:disabled{opacity:.6;cursor:wait}
    <button onclick="openModal('addProjectModal')" class="bg-cyan-600 hover:bg-cyan-500 px-4 py-2.5 rounded-xl text-xs font-bold"><i class="fa-solid fa-plus mr-1"></i> Tambah Proyek</button>
   </div>
  </header>
-
  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 space-y-6">
   <section id="view-dashboard" class="space-y-6">
    <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-cyan-950 rounded-2xl p-6 sm:p-8 text-white shadow-xl">
@@ -98,15 +80,12 @@ button:disabled{opacity:.6;cursor:wait}
    </div>
    <div class="bg-white rounded-2xl border shadow-sm p-5">
     <h3 class="text-sm font-bold mb-4">Proyek Terbaru Ditambahkan</h3>
-    <div class="overflow-x-auto">
-     <table class="w-full text-left text-xs">
-      <thead><tr class="border-b bg-slate-50 text-slate-500"><th class="p-3">Nama Unit</th><th class="p-3">Tipe / Nomor Unit</th><th class="p-3">WO</th><th class="p-3">Status</th><th class="p-3">Aksi</th></tr></thead>
-      <tbody id="recentProjectsTable"></tbody>
-     </table>
-    </div>
+    <div class="overflow-x-auto"><table class="w-full text-left text-xs">
+     <thead><tr class="border-b bg-slate-50 text-slate-500"><th class="p-3">Nama Unit</th><th class="p-3">Tipe / Nomor Unit</th><th class="p-3">WO</th><th class="p-3">Status</th><th class="p-3">Aksi</th></tr></thead>
+     <tbody id="recentProjectsTable"></tbody>
+    </table></div>
    </div>
   </section>
-
   <section id="view-projects" class="hidden space-y-5">
    <div class="bg-white p-4 rounded-2xl border flex flex-col sm:flex-row gap-3">
     <input id="searchInput" type="search" oninput="filterProjects()" placeholder="Cari nama, tipe, nomor unit, atau WO..." class="flex-1 p-3 border rounded-xl text-xs">
@@ -160,32 +139,32 @@ button:disabled{opacity:.6;cursor:wait}
   </form>
  </div>
 </div>
-
 <div id="toast" class="fixed bottom-5 right-5 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-xl text-xs hidden z-[60]"><span id="toastMsg"></span></div>
 
 <script>
-/* KONFIGURASI SUPABASE */
-const SUPABASE_URL = 'https://maveqvmzydqvroohepum.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1hdmVxdm16eWRxdnJvb2hlcHVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMwMjc2MTcsImV4cCI6MjEwODYwMzYxN30.0iJjNR55IdQJ0ewUQnf-ZmbY7bvFJdq241g-cF_Y_LE';
+(function(){
+'use strict';
 
-/* PENTING: gunakan supabaseClient agar tidak bentrok dengan global window.supabase */
-let supabaseClient = null;
-let recoveryMode = false;
-let toastTimer = null;
+/* Seluruh variabel lokal berada di dalam fungsi ini agar tidak bentrok
+   dengan variabel global dari pustaka atau script lainnya. */
+const SUPABASE_URL='https://maveqvmzydqvroohepum.supabase.co';
+const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1hdmVxdm16eWRxdnJvb2hlcHVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMwMjc2MTcsImV4cCI6MjEwODYwMzYxN30.0iJjNR55IdQJ0ewUQnf-ZmbY7bvFJdq241g-cF_Y_LE';
 
-try {
- if (window.supabase && typeof window.supabase.createClient === 'function') {
-  supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-   auth: {persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}
+let supabaseClient=null;
+let recoveryMode=false;
+let toastTimer=null;
+
+try{
+ if(window.supabase&&typeof window.supabase.createClient==='function'){
+  supabaseClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY,{
+   auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}
   });
- } else {
+ }else{
   console.error('Supabase SDK belum berhasil dimuat.');
  }
-} catch(error) {
- console.error('Supabase initialization error:',error);
-}
+}catch(error){console.error('Supabase initialization error:',error);}
 
-let projects = [
+let projects=[
  {id:'PRJ-001',unitName:'Hoist Crane Structure 10 Ton',unitType:'Heavy Equipment',unitNumber:'CRN-2026-A01',status:'In Progress',
   documents:{wo:'WO-2026-CRN01.pdf',drawing:'DWG-CRN10T-REV2.pdf',handover:'HOM-CRN-01.pdf',bom:'BOM-CRN-10T.pdf'},
   processes:{komponen:{status:'Completed',files:[{name:'Sertifikat Steel Plate SS400.pdf',type:'Dokumen PDF'}]},fabrikasi:{status:'In Progress',files:[{name:'Laporan Pengelasan Structure.pdf',type:'Laporan QC'}]},painting:{status:'Pending',files:[]}}},
@@ -194,14 +173,13 @@ let projects = [
   processes:{komponen:{status:'Completed',files:[{name:'Checklist Roller & Motor.pdf',type:'Dokumen PDF'}]},fabrikasi:{status:'Completed',files:[{name:'Foto Fabrikasi Frame.jpg',type:'Foto Bukti'}]},painting:{status:'Completed',files:[{name:'Laporan Ketebalan Cat QC.pdf',type:'Laporan QC'}]}}}
 ];
 
-const stages = [
+const stages=[
  {key:'komponen',label:'1. Pengadaan & Pengecekan Komponen'},
  {key:'fabrikasi',label:'2. Proses Fabrikasi & Assembly'},
  {key:'painting',label:'3. Painting, Finishing & QC Final'}
 ];
 
 function $(id){return document.getElementById(id);}
-
 function showMessage(element,message,success=false){
  if(!element)return;
  element.textContent=message;
@@ -259,40 +237,29 @@ $('loginForm').addEventListener('submit',async function(event){
   showLoginMessage('Email dan password wajib diisi.');
   return;
  }
-
  setBusy(button,true,'Memproses...','Masuk');
  try{
   const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});
   if(error){
    console.error('Login error:',error);
    const message=error.message||'';
-   if(/invalid login credentials/i.test(message)){
-    showLoginMessage('Email atau password salah. Periksa kembali atau gunakan Lupa Sandi.');
-   }else if(/email not confirmed/i.test(message)){
-    showLoginMessage('Email belum dikonfirmasi. Hubungi administrator Supabase.');
-   }else{
-    showLoginMessage('Login gagal: '+message);
-   }
+   if(/invalid login credentials/i.test(message))showLoginMessage('Email atau password salah. Periksa kembali atau gunakan Lupa Sandi.');
+   else if(/email not confirmed/i.test(message))showLoginMessage('Email belum dikonfirmasi. Hubungi administrator Supabase.');
+   else showLoginMessage('Login gagal: '+message);
    return;
   }
-  if(data&&data.user){
-   appLoginSuccess(data.user.email);
-  }else{
-   showLoginMessage('Login belum berhasil. Silakan coba kembali.');
-  }
+  if(data&&data.user)appLoginSuccess(data.user.email);
+  else showLoginMessage('Login belum berhasil. Silakan coba kembali.');
  }catch(error){
   console.error('Login exception:',error);
   showLoginMessage('Terjadi kesalahan saat login. Periksa koneksi internet lalu coba kembali.');
- }finally{
-  setBusy(button,false,'Memproses...','Masuk');
- }
+ }finally{setBusy(button,false,'Memproses...','Masuk');}
 });
 
 /* LUPA PASSWORD */
 $('forgotPasswordButton').addEventListener('click',async function(){
  clearMessage($('loginMessage'));
  const email=$('loginEmail').value.trim();
-
  if(!email){
   showLoginMessage('Masukkan alamat email pada kolom Email terlebih dahulu.');
   $('loginEmail').focus();
@@ -307,7 +274,6 @@ $('forgotPasswordButton').addEventListener('click',async function(){
   showLoginMessage('Supabase tidak berhasil terhubung. Periksa konfigurasi dan koneksi internet.');
   return;
  }
-
  const button=$('forgotPasswordButton');
  button.disabled=true;
  button.textContent='Mengirim tautan...';
@@ -337,18 +303,9 @@ $('resetPasswordForm').addEventListener('submit',async function(event){
  const confirmPassword=$('confirmPassword').value;
  const button=$('resetSubmit');
 
- if(password.length<8){
-  showMessage($('resetMessage'),'Password harus memiliki minimal 8 karakter.');
-  return;
- }
- if(password!==confirmPassword){
-  showMessage($('resetMessage'),'Konfirmasi password tidak sama.');
-  return;
- }
- if(!supabaseClient){
-  showMessage($('resetMessage'),'Supabase tidak berhasil terhubung.');
-  return;
- }
+ if(password.length<8){showMessage($('resetMessage'),'Password harus memiliki minimal 8 karakter.');return;}
+ if(password!==confirmPassword){showMessage($('resetMessage'),'Konfirmasi password tidak sama.');return;}
+ if(!supabaseClient){showMessage($('resetMessage'),'Supabase tidak berhasil terhubung.');return;}
 
  setBusy(button,true,'Menyimpan...','Simpan Password Baru');
  try{
@@ -370,15 +327,11 @@ $('resetPasswordForm').addEventListener('submit',async function(event){
  }catch(error){
   console.error('Update password exception:',error);
   showMessage($('resetMessage'),'Terjadi kesalahan saat memperbarui password. Coba kembali.');
- }finally{
-  setBusy(button,false,'Menyimpan...','Simpan Password Baru');
- }
+ }finally{setBusy(button,false,'Menyimpan...','Simpan Password Baru');}
 });
 
 $('backToLoginButton').addEventListener('click',async function(){
- if(supabaseClient){
-  try{await supabaseClient.auth.signOut();}catch(error){console.error(error);}
- }
+ if(supabaseClient){try{await supabaseClient.auth.signOut();}catch(error){console.error(error);}}
  setRecoveryView(false);
  appShowLogin();
 });
@@ -389,9 +342,7 @@ async function logoutSIS(){
   try{
    const {error}=await supabaseClient.auth.signOut();
    if(error)console.error('Logout error:',error);
-  }catch(error){
-   console.error('Logout exception:',error);
-  }
+  }catch(error){console.error('Logout exception:',error);}
  }
  appShowLogin();
  showToast('Anda telah keluar.');
@@ -407,42 +358,30 @@ if(supabaseClient){
    $('sisApp').classList.remove('flex');
    return;
   }
-  if(event==='SIGNED_OUT'){
-   appShowLogin();
-   return;
-  }
-  if(session&&session.user&&!recoveryMode){
-   appLoginSuccess(session.user.email);
-  }
+  if(event==='SIGNED_OUT'){appShowLogin();return;}
+  if(session&&session.user&&!recoveryMode)appLoginSuccess(session.user.email);
  });
 
  window.addEventListener('load',async()=>{
   try{
    const {data,error}=await supabaseClient.auth.getSession();
    if(error)console.error('Session check error:',error);
-   const hash=window.location.hash||'';
-   const params=new URLSearchParams(hash.replace(/^#/,''));
-   const isRecovery=params.get('type')==='recovery';
-
-   if(isRecovery){
+   const params=new URLSearchParams((window.location.hash||'').replace(/^#/,''));
+   if(params.get('type')==='recovery'){
     setRecoveryView(true);
     $('loginScreen').classList.remove('hidden');
     $('sisApp').classList.add('hidden');
     $('sisApp').classList.remove('flex');
    }else if(data.session&&data.session.user){
     appLoginSuccess(data.session.user.email);
-   }else{
-    appShowLogin();
-   }
+   }else{appShowLogin();}
   }catch(error){
    console.error('Session initialization error:',error);
    appShowLogin();
   }
  });
 }else{
- window.addEventListener('load',()=>{
-  showLoginMessage('Supabase belum dapat dimuat. Periksa koneksi internet atau konfigurasi Supabase.');
- });
+ window.addEventListener('load',()=>showLoginMessage('Supabase belum dapat dimuat. Periksa koneksi internet atau konfigurasi Supabase.'));
 }
 
 /* DASHBOARD DAN PROYEK */
@@ -452,8 +391,7 @@ function switchView(view){
  $('view-projects').classList.toggle('hidden',dashboard);
  $('nav-dashboard').className='px-3 py-2 rounded-lg text-xs font-semibold '+(dashboard?'bg-cyan-500 text-white':'text-slate-300');
  $('nav-projects').className='px-3 py-2 rounded-lg text-xs font-semibold '+(!dashboard?'bg-cyan-500 text-white':'text-slate-300');
- if(dashboard)renderDashboard();
- else renderProjectsList();
+ if(dashboard)renderDashboard();else renderProjectsList();
 }
 function statusClass(status){
  if(status==='Completed')return 'bg-emerald-100 text-emerald-700';
@@ -509,18 +447,16 @@ function renderProjectsList(list=projects){
 function filterProjects(){
  const keyword=$('searchInput').value.toLowerCase().trim();
  const status=$('filterStatus').value;
- const filtered=projects.filter(p=>{
+ renderProjectsList(projects.filter(p=>{
   const text=[p.unitName,p.unitType,p.unitNumber,p.documents.wo].join(' ').toLowerCase();
   return text.includes(keyword)&&(status==='ALL'||p.status===status);
- });
- renderProjectsList(filtered);
+ }));
 }
 
 $('addProjectForm').addEventListener('submit',function(event){
  event.preventDefault();
- const id='PRJ-'+String(Date.now());
  const project={
-  id,
+  id:'PRJ-'+String(Date.now()),
   unitName:$('newUnitName').value.trim(),
   unitType:$('newUnitType').value.trim(),
   unitNumber:$('newUnitNumber').value.trim(),
@@ -575,6 +511,8 @@ function openUploadModal(projectId,stageKey){
  const stage=stages.find(s=>s.key===stageKey);
  $('uploadModalTitle').textContent='Update: '+(stage?stage.label:'Tahap');
  $('uploadStageForm').reset();
+ $('uploadProjectId').value=projectId;
+ $('uploadStageKey').value=stageKey;
  openModal('uploadStageModal');
 }
 $('uploadStageForm').addEventListener('submit',function(event){
@@ -605,6 +543,17 @@ function showToast(message){
  clearTimeout(toastTimer);
  toastTimer=setTimeout(()=>toast.classList.add('hidden'),3000);
 }
+
+/* Fungsi yang dipanggil melalui atribut onclick harus tersedia di window. */
+window.switchView=switchView;
+window.filterProjects=filterProjects;
+window.openModal=openModal;
+window.closeModal=closeModal;
+window.openTimeline=openTimeline;
+window.openUploadModal=openUploadModal;
+window.logoutSIS=logoutSIS;
+
+})();
 </script>
 </body>
 </html>
