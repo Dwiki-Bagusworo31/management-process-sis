@@ -41,7 +41,6 @@
 </head>
 <body class="h-full text-slate-800 flex flex-col antialiased selection:bg-cyan-500 selection:text-white">
 
-   
 <!-- LOGIN SUPABASE -->
 <section id="loginScreen" class="min-h-screen flex items-center justify-center bg-slate-950 px-4 py-10">
     <div class="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden">
@@ -90,8 +89,8 @@
     </div>
 </section>
 
-
-    <div id="sisApp" class="hidden">
+<!-- MAIN APP CONTAINER (Tersembunyi Sebelum Login) -->
+    <div id="sisApp" class="hidden flex-1 flex flex-col h-full">
         <div class="bg-cyan-50 border-b border-cyan-100 px-4 py-2 flex flex-wrap items-center justify-end gap-3 text-xs">
             <span id="sisUserEmail" class="font-semibold text-slate-600"></span>
             <button id="logoutButton" type="button" onclick="logoutSIS()"
@@ -425,737 +424,438 @@
             <i class="fa-solid fa-circle-check text-cyan-400 text-base"></i>
             <span id="toastMsg">Pesan Notifikasi</span>
         </div>
-
-        <!-- APP JAVASCRIPT LOGIC -->
-        <script>
-            // Initial Dataset
-            let projects = [
-                {
-                    id: "PRJ-001",
-                    unitName: "Hoist Crane Structure 10 Ton",
-                    unitType: "Heavy Equipment",
-                    unitNumber: "CRN-2026-A01",
-                    status: "In Progress",
-                    documents: {
-                        wo: "WO-2026-CRN01.pdf",
-                        drawing: "DWG-CRN10T-REV2.pdf",
-                        handover: "HOM-CRN-01.pdf",
-                        bom: "BOM-CRN-10T.pdf"
-                    },
-                    processes: {
-                        komponen: {
-                            status: "Completed",
-                            files: [
-                                { name: "Sertifikat Steel Plate SS400.pdf", type: "Dokumen PDF" },
-                                { name: "Foto Material Utama Frame.jpg", type: "Foto Bukti" }
-                            ]
-                        },
-                        fabrikasi: {
-                            status: "In Progress",
-                            files: [
-                                { name: "Laporan Pengelasan Structure.pdf", type: "Laporan QC" },
-                                { name: "Foto Perakitan Main Girder.jpg", type: "Foto Bukti" }
-                            ]
-                        },
-                        painting: {
-                            status: "Pending",
-                            files: []
-                        }
-                    }
-                },
-                {
-                    id: "PRJ-002",
-                    unitName: "Conveyor Belt System Line B",
-                    unitType: "Custom Conveyor Unit",
-                    unitNumber: "CNV-2026-B05",
-                    status: "Completed",
-                    documents: {
-                        wo: "WO-2026-CNV05.pdf",
-                        drawing: "DWG-CNV-LINEB.pdf",
-                        handover: "HOM-CNV-FINAL.pdf",
-                        bom: "BOM-CNV-FULL.pdf"
-                    },
-                    processes: {
-                        komponen: {
-                            status: "Completed",
-                            files: [{ name: "Checklist Roller & Motor.pdf", type: "Dokumen PDF" }]
-                        },
-                        fabrikasi: {
-                            status: "Completed",
-                            files: [{ name: "Foto Fabrikasi Frame.jpg", type: "Foto Bukti" }]
-                        },
-                        painting: {
-                            status: "Completed",
-                            files: [
-                                { name: "Foto Finishing Epoxy.jpg", type: "Foto Bukti" },
-                                { name: "Laporan Ketebalan Cat (QC).pdf", type: "Laporan QC" }
-                            ]
-                        }
-                    }
-                }
-            ];
-
-            // Init App
-            window.onload = function() {
-                renderDashboard();
-                renderProjectsList();
-            };
-
-            // Navigation Switcher
-            function switchView(viewName) {
-                const dashView = document.getElementById('view-dashboard');
-                const projView = document.getElementById('view-projects');
-
-                const btnDash = document.getElementById('nav-dashboard');
-                const btnProj = document.getElementById('nav-projects');
-                const mBtnDash = document.getElementById('mobile-nav-dashboard');
-                const mBtnProj = document.getElementById('mobile-nav-projects');
-
-                if (viewName === 'dashboard') {
-                    dashView.classList.remove('hidden');
-                    projView.classList.add('hidden');
-
-                    btnDash.className = "px-4 py-2 rounded-lg text-xs font-semibold transition-all bg-cyan-500 text-white shadow-sm";
-                    btnProj.className = "px-4 py-2 rounded-lg text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-700 transition-all";
-                    mBtnDash.className = "text-xs font-semibold text-cyan-400 py-1";
-                    mBtnProj.className = "text-xs font-semibold text-slate-400 py-1";
-                } else {
-                    dashView.classList.add('hidden');
-                    projView.classList.remove('hidden');
-
-                    btnProj.className = "px-4 py-2 rounded-lg text-xs font-semibold transition-all bg-cyan-500 text-white shadow-sm";
-                    btnDash.className = "px-4 py-2 rounded-lg text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-700 transition-all";
-                    mBtnProj.className = "text-xs font-semibold text-cyan-400 py-1";
-                    mBtnDash.className = "text-xs font-semibold text-slate-400 py-1";
-                }
-            }
-
-            // Dashboard Metrics & Recent Overview
-            function renderDashboard() {
-                const total = projects.length;
-                const inProgress = projects.filter(p => p.status === 'In Progress').length;
-                const onInspection = projects.filter(p => p.status === 'On Inspection').length;
-                const completed = projects.filter(p => p.status === 'Completed').length;
-
-                document.getElementById('stat-total').innerText = total;
-                document.getElementById('stat-progress').innerText = inProgress;
-                document.getElementById('stat-inspection').innerText = onInspection;
-                document.getElementById('stat-completed').innerText = completed;
-
-                const recentTbody = document.getElementById('recentProjectsTable');
-                recentTbody.innerHTML = '';
-
-                projects.slice(0, 5).forEach(prj => {
-                    recentTbody.innerHTML += `
-                        <tr class="hover:bg-slate-50 transition-colors">
-                            <td class="py-2.5 px-3 font-bold text-slate-800">${prj.unitName}</td>
-                            <td class="py-2.5 px-3 font-medium text-slate-600">${prj.unitType} - <span class="font-mono text-cyan-700">${prj.unitNumber}</span></td>
-                            <td class="py-2.5 px-3">
-                                <span onclick="previewDocument('${prj.documents.wo}')" class="text-cyan-600 hover:underline cursor-pointer font-medium">
-                                    <i class="fa-regular fa-file-pdf me-1 text-rose-500"></i>${prj.documents.wo}
-                                </span>
-                            </td>
-                            <td class="py-2.5 px-3">${getStatusBadgeHTML(prj.status)}</td>
-                            <td class="py-2.5 px-3 text-right">
-                                <button onclick="openTimelineModal('${prj.id}')" class="text-xs text-cyan-600 hover:text-cyan-700 font-bold">Detail Flow →</button>
-                            </td>
-                        </tr>
-                    `;
-                });
-            }
-
-            // Render Cards List View
-            function renderProjectsList(dataToRender = projects) {
-                const container = document.getElementById('projectListContainer');
-                container.innerHTML = '';
-
-                if (dataToRender.length === 0) {
-                    container.innerHTML = `
-                        <div class="bg-white p-12 rounded-2xl text-center border border-slate-200">
-                            <i class="fa-solid fa-folder-open text-4xl text-slate-300 mb-2"></i>
-                            <p class="text-sm font-bold text-slate-700">Tidak ada unit proyek ditemukan</p>
-                            <p class="text-xs text-slate-400 mt-1">Gunakan kata kunci lain atau tambah unit baru.</p>
-                        </div>
-                    `;
-                    return;
-                }
-
-                dataToRender.forEach(prj => {
-                    const cardHTML = `
-                        <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden transition-all hover:shadow-md">
-                            <div class="p-5 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-slate-50/60">
-                                <div>
-                                    <div class="flex items-center space-x-3">
-                                        <h3 class="text-base font-extrabold text-slate-900">${prj.unitName}</h3>
-                                        ${getStatusBadgeHTML(prj.status)}
-                                    </div>
-                                    <p class="text-xs text-slate-500 mt-1">
-                                        <span class="font-semibold text-slate-700">Type:</span> ${prj.unitType} &nbsp;|&nbsp;
-                                        <span class="font-semibold text-slate-700">No. Unit:</span> <span class="font-mono text-cyan-700">${prj.unitNumber}</span>
-                                    </p>
-                                </div>
-
-                                <div class="flex items-center space-x-2">
-                                    <label class="text-[11px] font-bold text-slate-400">Status Overall:</label>
-                                    <select onchange="updateOverallStatus('${prj.id}', this.value)" class="text-xs bg-white border border-slate-200 rounded-xl px-2.5 py-1.5 font-bold text-slate-700 focus:ring-2 focus:ring-cyan-500">
-                                        <option value="Not Started" ${prj.status === 'Not Started' ? 'selected' : ''}>Not Started</option>
-                                        <option value="In Progress" ${prj.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
-                                        <option value="On Inspection" ${prj.status === 'On Inspection' ? 'selected' : ''}>On Inspection</option>
-                                        <option value="Completed" ${prj.status === 'Completed' ? 'selected' : ''}>Completed</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <div class="p-5 space-y-5">
-                                <div>
-                                    <h4 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center space-x-1.5">
-                                        <i class="fa-solid fa-file-shield text-cyan-600"></i>
-                                        <span>Dokumen Acuan Utama (WO, Drawing, Hand Over Memo, BOM)</span>
-                                    </h4>
-                                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                                        ${renderDocButton('Nomor WO', prj.documents.wo, 'fa-file-pdf', 'text-rose-500')}
-                                        ${renderDocButton('Drawing', prj.documents.drawing, 'fa-compass-drafting', 'text-blue-500')}
-                                        ${renderDocButton('Hand Over Memo', prj.documents.handover, 'fa-file-contract', 'text-emerald-500')}
-                                        ${renderDocButton('Bill of Material', prj.documents.bom, 'fa-boxes-packing', 'text-amber-500')}
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <div class="flex items-center justify-between mb-2">
-                                        <h4 class="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex items-center space-x-1.5">
-                                            <i class="fa-solid fa-diagram-project text-cyan-600"></i>
-                                            <span>Tahapan Proses Pengerjaan</span>
-                                        </h4>
-                                        <button onclick="openTimelineModal('${prj.id}')" class="text-xs text-cyan-600 hover:text-cyan-700 font-bold flex items-center space-x-1">
-                                            <i class="fa-solid fa-timeline"></i>
-                                            <span>Lihat Timeline Detail</span>
-                                        </button>
-                                    </div>
-
-                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                        ${renderStageCard(prj, 'komponen', '1. Komponen', 'fa-cubes')}
-                                        ${renderStageCard(prj, 'fabrikasi', '2. Fabrikasi', 'fa-hammer')}
-                                        ${renderStageCard(prj, 'painting', '3. Painting', 'fa-paint-roller')}
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    `;
-                    container.innerHTML += cardHTML;
-                });
-            }
-
-            // Render Document Button Helper
-            function renderDocButton(label, docName, icon, colorClass) {
-                return `
-                    <button onclick="previewDocument('${docName}')" class="flex items-center space-x-2 p-2 rounded-xl border border-slate-200 bg-slate-50/80 hover:bg-cyan-50/50 hover:border-cyan-200 transition-all text-left group">
-                        <i class="fa-solid ${icon} ${colorClass} text-base group-hover:scale-110 transition-transform"></i>
-                        <div class="truncate">
-                            <p class="text-[10px] text-slate-400 font-semibold">${label}</p>
-                            <p class="text-xs font-bold text-slate-700 truncate">${docName || 'N/A'}</p>
-                        </div>
-                    </button>
-                `;
-            }
-
-            // Render Stage Card Helper
-            function renderStageCard(prj, stageKey, stageTitle, iconClass) {
-                const stageData = prj.processes[stageKey];
-                const fileCount = stageData.files.length;
-
-                let fileListHTML = '';
-                if (fileCount > 0) {
-                    fileListHTML = stageData.files.map(f => `
-                        <div class="flex items-center justify-between text-[11px] p-2 bg-white rounded-lg border border-slate-100 shadow-2xs">
-                            <span class="truncate text-slate-700 font-medium cursor-pointer hover:text-cyan-600" onclick="previewDocument('${f.name}')">
-                                <i class="${f.type.includes('Foto') ? 'fa-regular fa-image text-emerald-500' : 'fa-regular fa-file-pdf text-rose-500'} me-1"></i>
-                                ${f.name}
-                            </span>
-                            <i class="fa-solid fa-eye text-slate-400 hover:text-slate-600 cursor-pointer" onclick="previewDocument('${f.name}')"></i>
-                        </div>
-                    `).join('');
-                } else {
-                    fileListHTML = `<p class="text-[11px] text-slate-400 italic">Belum ada lampiran.</p>`;
-                }
-
-                return `
-                    <div class="bg-slate-50 p-3.5 rounded-xl border border-slate-200 flex flex-col justify-between space-y-3">
-                        <div>
-                            <div class="flex items-center justify-between mb-2">
-                                <span class="text-xs font-bold text-slate-800 flex items-center space-x-1.5">
-                                    <i class="fa-solid ${iconClass} text-slate-500"></i>
-                                    <span>${stageTitle}</span>
-                                </span>
-                                ${getStageStatusBadgeHTML(stageData.status)}
-                            </div>
-                            <div class="space-y-1.5 mt-2">
-                                ${fileListHTML}
-                            </div>
-                        </div>
-
-                        <button onclick="openUploadStageModal('${prj.id}', '${stageKey}', '${stageTitle}')" class="w-full py-1.5 px-3 bg-white hover:bg-cyan-50 border border-slate-200 text-cyan-700 rounded-lg text-xs font-bold flex items-center justify-center space-x-1.5 transition-all shadow-2xs">
-                            <i class="fa-solid fa-upload"></i>
-                            <span>Upload Foto/Doc</span>
-                        </button>
-                    </div>
-                `;
-            }
-
-            // Status Badges HTML
-            function getStatusBadgeHTML(status) {
-                if (status === 'Completed') {
-                    return `<span class="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-emerald-100 text-emerald-700 border border-emerald-200"><i class="fa-solid fa-check me-1"></i> Completed</span>`;
-                } else if (status === 'On Inspection') {
-                    return `<span class="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-indigo-100 text-indigo-700 border border-indigo-200"><i class="fa-solid fa-magnifying-glass me-1"></i> On Inspection</span>`;
-                } else if (status === 'Not Started') {
-                    return `<span class="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-slate-200 text-slate-700 border border-slate-300"><i class="fa-solid fa-clock me-1"></i> Not Started</span>`;
-                }
-                return `<span class="px-2.5 py-0.5 rounded-full text-[11px] font-extrabold bg-amber-100 text-amber-700 border border-amber-200"><i class="fa-solid fa-gears fa-spin me-1"></i> In Progress</span>`;
-            }
-
-            function getStageStatusBadgeHTML(status) {
-                if (status === 'Completed') {
-                    return `<span class="text-[10px] px-2 py-0.5 rounded font-bold bg-emerald-100 text-emerald-800">Completed</span>`;
-                } else if (status === 'In Progress') {
-                    return `<span class="text-[10px] px-2 py-0.5 rounded font-bold bg-amber-100 text-amber-800">In Progress</span>`;
-                }
-                return `<span class="text-[10px] px-2 py-0.5 rounded font-bold bg-slate-200 text-slate-600">Pending</span>`;
-            }
-
-            // Filters
-            function filterProjects() {
-                const query = document.getElementById('searchInput').value.toLowerCase();
-                const statusFilter = document.getElementById('filterStatus').value;
-
-                const filtered = projects.filter(p => {
-                    const matchSearch = p.unitName.toLowerCase().includes(query) ||
-                        p.unitType.toLowerCase().includes(query) ||
-                        p.unitNumber.toLowerCase().includes(query) ||
-                        p.documents.wo.toLowerCase().includes(query);
-                    const matchStatus = statusFilter === 'ALL' || p.status === statusFilter;
-                    return matchSearch && matchStatus;
-                });
-
-                renderProjectsList(filtered);
-            }
-
-            // Overall Status Change Handler
-            function updateOverallStatus(prjId, newStatus) {
-                const prj = projects.find(p => p.id === prjId);
-                if (prj) {
-                    prj.status = newStatus;
-                    renderDashboard();
-                    renderProjectsList();
-                    showToast(`Status unit ${prj.unitNumber} diperbarui: ${newStatus}`);
-                }
-            }
-
-            // Add Project Submit
-            function handleAddProject(e) {
-                e.preventDefault();
-                const name = document.getElementById('newUnitName').value;
-                const type = document.getElementById('newUnitType').value;
-                const number = document.getElementById('newUnitNumber').value;
-
-                const newPrj = {
-                    id: 'PRJ-' + String(projects.length + 1).padStart(3, '0'),
-                    unitName: name,
-                    unitType: type,
-                    unitNumber: number,
-                    status: 'In Progress',
-                    documents: {
-                        wo: document.getElementById('docWO').value || `${number}-WO.pdf`,
-                        drawing: document.getElementById('docDrawing').value || `${number}-DWG.pdf`,
-                        handover: document.getElementById('docHandover').value || `${number}-HOM.pdf`,
-                        bom: document.getElementById('docBOM').value || `${number}-BOM.pdf`
-                    },
-                    processes: {
-                        komponen: { status: 'In Progress', files: [] },
-                        fabrikasi: { status: 'Pending', files: [] },
-                        painting: { status: 'Pending', files: [] }
-                    }
-                };
-
-                projects.unshift(newPrj);
-                renderDashboard();
-                renderProjectsList();
-                closeModal('addProjectModal');
-                document.getElementById('addProjectForm').reset();
-                showToast('Unit proyek baru berhasil dibuat!');
-            }
-
-            // Stage Upload Modal Controls
-            function openUploadStageModal(prjId, stageKey, stageTitle) {
-                document.getElementById('uploadProjectId').value = prjId;
-                document.getElementById('uploadStageKey').value = stageKey;
-                document.getElementById('uploadModalTitle').innerText = `Upload Lampiran - ${stageTitle}`;
-                openModal('uploadStageModal');
-            }
-
-            function handleStageUpload(e) {
-                e.preventDefault();
-                const prjId = document.getElementById('uploadProjectId').value;
-                const stageKey = document.getElementById('uploadStageKey').value;
-                const fileName = document.getElementById('attachmentName').value;
-                const fileType = document.getElementById('attachmentType').value;
-                const newStatus = document.getElementById('stageStatusUpdate').value;
-
-                const prj = projects.find(p => p.id === prjId);
-                if (prj) {
-                    prj.processes[stageKey].files.push({ name: fileName, type: fileType });
-                    prj.processes[stageKey].status = newStatus;
-
-                    renderProjectsList();
-                    closeModal('uploadStageModal');
-                    document.getElementById('uploadStageForm').reset();
-                    showToast(`Bukti lampiran berhasil disimpan di tahap ${stageKey.toUpperCase()}`);
-                }
-            }
-
-            // Timeline Detail Modal Drawer
-            function openTimelineModal(prjId) {
-                const prj = projects.find(p => p.id === prjId);
-                if (!prj) return;
-
-                document.getElementById('timelineUnitName').innerText = prj.unitName;
-                document.getElementById('timelineUnitMeta').innerText = `${prj.unitType} | No. Unit: ${prj.unitNumber}`;
-
-                const container = document.getElementById('timelineContainer');
-                container.innerHTML = `
-                    ${renderTimelineStep('1. Tahap Komponen', prj.processes.komponen, 'fa-cubes')}
-                    ${renderTimelineStep('2. Tahap Fabrikasi', prj.processes.fabrikasi, 'fa-hammer')}
-                    ${renderTimelineStep('3. Tahap Painting', prj.processes.painting, 'fa-paint-roller')}
-                `;
-
-                openModal('detailTimelineModal');
-            }
-
-            function renderTimelineStep(title, stageData, icon) {
-                const filesHTML = stageData.files.length > 0
-                    ? stageData.files.map(f => `
-                        <li class="flex items-center space-x-2 text-xs bg-slate-100 p-2 rounded-lg cursor-pointer hover:bg-cyan-50" onclick="previewDocument('${f.name}')">
-                            <i class="fa-solid fa-paperclip text-cyan-600"></i>
-                            <span class="font-medium text-slate-700">${f.name}</span>
-                            <span class="text-[10px] text-slate-400">(${f.type})</span>
-                        </li>
-                    `).join('')
-                    : '<p class="text-xs text-slate-400 italic">Belum ada dokumen/foto pendukung.</p>';
-
-                return `
-                    <div class="relative pl-8">
-                        <div class="absolute left-0 top-0.5 w-7 h-7 rounded-full bg-cyan-600 text-white flex items-center justify-center text-xs font-bold shadow-md">
-                            <i class="fa-solid ${icon}"></i>
-                        </div>
-                        <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-2xs space-y-2">
-                            <div class="flex items-center justify-between">
-                                <h4 class="text-xs font-bold text-slate-900">${title}</h4>
-                                ${getStageStatusBadgeHTML(stageData.status)}
-                            </div>
-                            <ul class="space-y-1.5 pt-1">
-                                ${filesHTML}
-                            </ul>
-                        </div>
-                    </div>
-                `;
-            }
-
-            // Preview Document Helper
-            function previewDocument(docName) {
-                document.getElementById('previewDocName').innerText = docName || 'Document File';
-                openModal('previewModal');
-            }
-
-            // Modals Controls
-            function openModal(id) {
-                document.getElementById(id).classList.remove('hidden');
-            }
-
-            function closeModal(id) {
-                document.getElementById(id).classList.add('hidden');
-            }
-
-            // Toast Helper
-            function showToast(msg) {
-                const toast = document.getElementById('toast');
-                document.getElementById('toastMsg').innerText = msg;
-                toast.classList.remove('translate-y-20', 'opacity-0');
-                setTimeout(() => {
-                    toast.classList.add('translate-y-20', 'opacity-0');
-                }, 3000);
-            }
-        </script>
     </div>
 
+    <!-- APP JAVASCRIPT LOGIC -->
     <script>
-        // ============================================================
-        // KONFIGURASI SUPABASE
-        // GANTI DUA NILAI DI BAWAH INI DENGAN DATA DARI PROYEK SUPABASE-MU.
-        // Project URL: Supabase > Project Settings > API / Data API.
-        // Publishable key: Supabase > Project Settings > API Keys.
-        // JANGAN gunakan service_role key di website.
-        // ============================================================
-        const SUPABASE_URL = "https://maveqvmzydqvroohepum.supabase.co";
-        const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_8pydnk2otFO-29gT0ECYAw_HLQ435mX";
-
-        let sisSupabase = null;
-        let currentSISUser = null;
-
-        function showLoginMessage(message) {
-            const el = document.getElementById('loginMessage');
-            el.textContent = message;
-            el.classList.remove('hidden');
-        }
-
-        function showSISLogin() {
-            document.getElementById('loginScreen').classList.remove('hidden');
-            document.getElementById('sisApp').classList.add('hidden');
-        }
-
-        function showSISApp() {
-            document.getElementById('loginScreen').classList.add('hidden');
-            document.getElementById('sisApp').classList.remove('hidden');
-            document.getElementById('sisUserEmail').textContent = currentSISUser?.email || '';
-        }
-
-        async function verifySISSession(session) {
-            if (!session || !session.user) {
-                currentSISUser = null;
-                showSISLogin();
-                return false;
-            }
-
-            // Akun harus terdaftar pada public.profiles dengan role admin atau team.
-            const { data: profile, error } = await sisSupabase
-                .from('profiles')
-                .select('role')
-                .eq('id', session.user.id)
-                .maybeSingle();
-
-            if (error) {
-                await sisSupabase.auth.signOut();
-                showLoginMessage('Tidak dapat memeriksa peran akun. Pastikan tabel profiles, kolom id/role, dan policy RLS sudah benar.');
-                showSISLogin();
-                return false;
-            }
-
-            if (!profile || !['admin', 'team'].includes(profile.role)) {
-                await sisSupabase.auth.signOut();
-                showLoginMessage('Akun belum terdaftar sebagai admin/team di tabel profiles. Hubungi administrator.');
-                showSISLogin();
-                return false;
-            }
-
-            currentSISUser = session.user;
-            showSISApp();
-            return true;
-        }
-
-        document.addEventListener('DOMContentLoaded', async () => {
-            if (!window.supabase || !window.supabase.createClient) {
-                showLoginMessage('Komponen Supabase gagal dimuat. Periksa koneksi internet lalu muat ulang halaman.');
-                return;
-            }
-
-            if (
-                SUPABASE_URL === 'TEMPEL_PROJECT_URL_DI_SINI' ||
-                SUPABASE_PUBLISHABLE_KEY === 'TEMPEL_PUBLISHABLE_KEY_DI_SINI'
-            ) {
-                showLoginMessage('Konfigurasi belum diisi. Ganti Project URL dan Publishable key pada bagian KONFIGURASI SUPABASE di kode.');
-                return;
-            }
-
-            sisSupabase = window.supabase.createClient(
-                SUPABASE_URL,
-                SUPABASE_PUBLISHABLE_KEY
-            );
-
-            document.getElementById('loginForm').addEventListener('submit', async (event) => {
-                event.preventDefault();
-
-                
-                const button = document.getElementById('loginSubmit');
-                const email = document.getElementById('loginEmail').value.trim();
-                const password = document.getElementById('loginPassword').value;
-
-                document.getElementById('loginMessage').classList.add('hidden');
-                button.disabled = true;
-                button.textContent = 'Memeriksa...';
-
-                try {
-                    if (!sisSupabase) {
-                        showLoginMessage('Koneksi sistem belum siap. Muat ulang halaman lalu coba lagi.');
-                        return;
+        // ==========================================
+        // 1. INISIALISASI SUPABASE (Ganti dengan kunci proyek kamu)
+        // ==========================================
+        const SUPABASE_URL = 'https://maveqvmzydqvroohepum.supabase.co/rest/v1/'; 
+        const SUPABASE_ANON_KEY = ''sb_publishable_8pydnk2otFO-29gT0ECYAw_HLQ435mX;
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        // Initial Dataset
+        let projects = [
+            {
+                id: "PRJ-001",
+                unitName: "Hoist Crane Structure 10 Ton",
+                unitType: "Heavy Equipment",
+                unitNumber: "CRN-2026-A01",
+                status: "In Progress",
+                documents: {
+                    wo: "WO-2026-CRN01.pdf",
+                    drawing: "DWG-CRN10T-REV2.pdf",
+                    handover: "HOM-CRN-01.pdf",
+                    bom: "BOM-CRN-10T.pdf"
+                },
+                processes: {
+                    komponen: {
+                        status: "Completed",
+                        files: [
+                            { name: "Sertifikat Steel Plate SS400.pdf", type: "Dokumen PDF" },
+                            { name: "Foto Material Utama Frame.jpg", type: "Foto Bukti" }
+                        ]
+                    },
+                    fabrikasi: {
+                        status: "In Progress",
+                        files: [
+                            { name: "Laporan Pengelasan Structure.pdf", type: "Laporan QC" },
+                            { name: "Foto Perakitan Main Girder.jpg", type: "Foto Bukti" }
+                        ]
+                    },
+                    painting: {
+                        status: "Pending",
+                        files: []
                     }
-
-                    const { data, error } = await sisSupabase.auth.signInWithPassword({
-                        email,
-                        password
-                    });
-
-                    if (error) {
-                        console.error('Login Supabase gagal:', error.message);
-                        showLoginMessage('Login gagal. Periksa email dan password akun Supabase.');
-                        return;
-                    }
-
-                    await verifySISSession(data.session);
-                } catch (error) {
-                    console.error('Kesalahan saat login:', error);
-                    showLoginMessage('Terjadi kendala koneksi saat login. Periksa internet lalu coba lagi.');
-                } finally {
-                    button.disabled = false;
-                    button.textContent = 'Masuk';
                 }
+            },
+            {
+                id: "PRJ-002",
+                unitName: "Conveyor Belt System Line B",
+                unitType: "Custom Conveyor Unit",
+                unitNumber: "CNV-2026-B05",
+                status: "Completed",
+                documents: {
+                    wo: "WO-2026-CNV05.pdf",
+                    drawing: "DWG-CNV-LINEB.pdf",
+                    handover: "HOM-CNV-FINAL.pdf",
+                    bom: "BOM-CNV-FULL.pdf"
+                },
+                processes: {
+                    komponen: {
+                        status: "Completed",
+                        files: [{ name: "Checklist Roller & Motor.pdf", type: "Dokumen PDF" }]
+                    },
+                    fabrikasi: {
+                        status: "Completed",
+                        files: [{ name: "Foto Fabrikasi Frame.jpg", type: "Foto Bukti" }]
+                    },
+                    painting: {
+                        status: "Completed",
+                        files: [
+                            { name: "Foto Finishing Epoxy.jpg", type: "Foto Bukti" },
+                            { name: "Laporan Ketebalan Cat (QC).pdf", type: "Laporan QC" }
+                        ]
+                    }
+                }
+            }
+        ];
+
+        // Init App & Auth State Check
+        window.onload = async function() {
+            // Cek apakah user sudah login sebelumnya di sesi ini
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                appLoginSuccess(session.user.email);
+            }
+
+            renderDashboard();
+            renderProjectsList();
+        };
+
+        // ==========================================
+        // 2. SUPABASE AUTH HANDLERS (Login & Lupa Sandi)
+        // ==========================================
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const msgEl = document.getElementById('loginMessage');
+            const submitBtn = document.getElementById('loginSubmit');
+
+            msgEl.classList.add('hidden');
+            submitBtn.textContent = 'Memproses...';
+            submitBtn.disabled = true;
+
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email: email,
+                password: password
             });
 
-            
-        try {
-            const { data, error } = await sisSupabase.auth.getSession();
+            submitBtn.textContent = 'Masuk';
+            submitBtn.disabled = false;
 
             if (error) {
-                throw error;
-            }
-
-            await verifySISSession(data.session);
-        } catch (error) {
-            console.error('Pemeriksaan sesi gagal:', error);
-            showLoginMessage('Sesi login tidak dapat diperiksa. Muat ulang halaman dan coba lagi.');
-            showSISLogin();
-        }
-
-        
-        sisSupabase.auth.onAuthStateChange((event, session) => {
-            if (event === 'SIGNED_OUT' || !session) {
-                currentSISUser = null;
-                showSISLogin();
+                msgEl.textContent = error.message;
+                msgEl.classList.remove('hidden');
+            } else {
+                appLoginSuccess(data.user.email);
             }
         });
-    });
 
-    async function logoutSIS() {
-        if (!sisSupabase) {
-            return;
-        }
+        document.getElementById('forgotPasswordButton').addEventListener('click', async () => {
+            const email = document.getElementById('loginEmail').value;
+            const msgEl = document.getElementById('loginMessage');
 
-        const button = document.getElementById('logoutButton');
-        button.disabled = true;
-
-        try {
-            const { error } = await sisSupabase.auth.signOut();
-
-            if (error) {
-                throw error;
-            }
-
-            currentSISUser = null;
-            document.getElementById('loginPassword').value = '';
-            showSISLogin();
-            showToast('Berhasil keluar dari sistem.');
-        } catch (error) {
-            console.error('Logout gagal:', error);
-            showToast('Gagal keluar. Periksa koneksi lalu coba lagi.');
-        } finally {
-            button.disabled = false;
-        }
-    }
-
-    // PROSES LUPA SANDI
-    
-    async function handleSISForgotPassword() {
-        if (!sisSupabase) {
-            showLoginMessage('Koneksi Supabase belum siap. Muat ulang halaman lalu coba lagi.');
-            return;
-        }
-
-        const emailInput = document.getElementById('loginEmail');
-        const email = emailInput ? emailInput.value.trim() : '';
-
-        if (!email) {
-            showLoginMessage('Masukkan email terlebih dahulu untuk reset sandi.');
-            if (emailInput) emailInput.focus();
-            return;
-        }
-
-        const forgotButton = document.getElementById('forgotPasswordButton');
-
-        if (forgotButton) {
-            forgotButton.disabled = true;
-            forgotButton.textContent = 'Mengirim...';
-        }
-
-        try {
-            const { error } = await sisSupabase.auth.resetPasswordForEmail(email, {
-                redirectTo: window.location.origin + window.location.pathname
-            });
-
-            if (error) {
-                console.error('RESET PASSWORD ERROR:', error);
-
-                showLoginMessage(
-                    'Reset sandi gagal: ' +
-                    error.message +
-                    ' (Kode HTTP: ' + (error.status || 'tidak diketahui') + ')'
-                );
+            if (!email) {
+                msgEl.textContent = 'Masukkan email Anda terlebih dahulu pada kolom Email di atas untuk reset password.';
+                msgEl.classList.remove('hidden', 'text-emerald-600');
+                msgEl.classList.add('text-rose-600');
                 return;
             }
 
-            showLoginMessage(
-                'Permintaan reset sandi berhasil dikirim. Periksa inbox dan folder spam.'
-            );
-        } catch (error) {
-            console.error('RESET PASSWORD EXCEPTION:', error);
-
-            showLoginMessage(
-                'Kesalahan reset sandi: ' +
-                (error.message || 'Koneksi gagal.')
-            );
-        } finally {
-            if (forgotButton) {
-                forgotButton.disabled = false;
-                forgotButton.textContent = 'Lupa Sandi?';
-            }
-        }
-    }
-
-
-    // HUBUNGKAN TOMBOL LUPA SANDI
-    document.getElementById('forgotPasswordButton')?.addEventListener('click', handleSISForgotPassword);
-
-
-    // FITUR LUPA SANDI
-    async function handleSISForgotPassword() {
-        const emailInput = document.getElementById('loginEmail');
-        const email = emailInput?.value.trim();
-
-        if (!email) {
-            showLoginMessage('Masukkan email terlebih dahulu untuk reset sandi.');
-            emailInput?.focus();
-            return;
-        }
-
-        try {
-            const { error } = await sisSupabase.auth.resetPasswordForEmail(email, {
-                redirectTo: window.location.origin + window.location.pathname
+            const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
+                redirectTo: window.location.href,
             });
 
             if (error) {
-    console.error('Permintaan reset sandi gagal:', error);
+                msgEl.textContent = error.message;
+                msgEl.classList.remove('hidden', 'text-emerald-600');
+                msgEl.classList.add('text-rose-600');
+            } else {
+                msgEl.textContent = 'Tautan pemulihan kata sandi telah dikirim ke email Anda.';
+                msgEl.classList.remove('hidden', 'text-rose-600');
+                msgEl.classList.add('text-emerald-600');
+            }
+        });
 
-    showLoginMessage(
-        'Reset sandi gagal: ' +
-        (error.message || 'Penyebab tidak diketahui') +
-        ' (Kode: ' + (error.status || '-') + ')'
-    );
-
-    return;
-}
-
-            showLoginMessage('Jika email terdaftar, periksa inbox dan folder spam untuk tautan reset sandi.');
-        } catch (error) {
-            console.error('Kendala reset sandi:', error);
-            showLoginMessage('Terjadi kendala koneksi saat meminta reset sandi.');
+        function appLoginSuccess(email) {
+            document.getElementById('loginScreen').classList.add('hidden');
+            document.getElementById('sisApp').classList.remove('hidden');
+            document.getElementById('sisUserEmail').textContent = email;
+            showToast('Berhasil masuk ke sistem.');
         }
-    }
-</script>
+
+        async function logoutSIS() {
+            await supabase.auth.signOut();
+            document.getElementById('sisApp').classList.add('hidden');
+            document.getElementById('loginScreen').classList.remove('hidden');
+            document.getElementById('loginPassword').value = '';
+            showToast('Anda telah keluar.');
+        }
+
+        // ==========================================
+        // 3. UI DASHBOARD & PROJECT LOGIC
+        // ==========================================
+        function switchView(viewName) {
+            const dashView = document.getElementById('view-dashboard');
+            const projView = document.getElementById('view-projects');
+
+            const btnDash = document.getElementById('nav-dashboard');
+            const btnProj = document.getElementById('nav-projects');
+            const mBtnDash = document.getElementById('mobile-nav-dashboard');
+            const mBtnProj = document.getElementById('mobile-nav-projects');
+
+            if (viewName === 'dashboard') {
+                dashView.classList.remove('hidden');
+                projView.classList.add('hidden');
+
+                btnDash.className = "px-4 py-2 rounded-lg text-xs font-semibold transition-all bg-cyan-500 text-white shadow-sm";
+                btnProj.className = "px-4 py-2 rounded-lg text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-700 transition-all";
+                mBtnDash.className = "text-xs font-semibold text-cyan-400 py-1";
+                mBtnProj.className = "text-xs font-semibold text-slate-400 py-1";
+                renderDashboard();
+            } else {
+                dashView.classList.add('hidden');
+                projView.classList.remove('hidden');
+
+                btnProj.className = "px-4 py-2 rounded-lg text-xs font-semibold transition-all bg-cyan-500 text-white shadow-sm";
+                btnDash.className = "px-4 py-2 rounded-lg text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-700 transition-all";
+                mBtnProj.className = "text-xs font-semibold text-cyan-400 py-1";
+                mBtnDash.className = "text-xs font-semibold text-slate-400 py-1";
+                renderProjectsList();
+            }
+        }
+
+        function renderDashboard() {
+            document.getElementById('stat-total').textContent = projects.length;
+            document.getElementById('stat-progress').textContent = projects.filter(p => p.status === 'In Progress').length;
+            document.getElementById('stat-inspection').textContent = projects.filter(p => p.status === 'On Inspection').length;
+            document.getElementById('stat-completed').textContent = projects.filter(p => p.status === 'Completed').length;
+
+            const tbody = document.getElementById('recentProjectsTable');
+            tbody.innerHTML = '';
+
+            projects.slice(-3).reverse().forEach(p => {
+                let badgeClass = 'bg-amber-50 text-amber-700 border-amber-200';
+                if (p.status === 'Completed') badgeClass = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+                if (p.status === 'On Inspection') badgeClass = 'bg-indigo-50 text-indigo-700 border-indigo-200';
+
+                tbody.innerHTML += `
+                    <tr class="hover:bg-slate-50/80 transition-colors">
+                        <td class="py-3 px-3 font-bold text-slate-900">${p.unitName}</td>
+                        <td class="py-3 px-3 text-slate-600">${p.unitType} <span class="text-[10px] text-slate-400 block">${p.unitNumber}</span></td>
+                        <td class="py-3 px-3"><button onclick="previewDoc('${p.documents.wo}')" class="text-cyan-600 hover:underline font-mono">${p.documents.wo}</button></td>
+                        <td class="py-3 px-3"><span class="px-2.5 py-1 rounded-full text-[10px] font-bold border ${badgeClass}">${p.status}</span></td>
+                        <td class="py-3 px-3 text-right">
+                            <button onclick="openTimeline('${p.id}')" class="px-3 py-1 bg-slate-900 text-white rounded-lg hover:bg-slate-800 text-[11px] font-bold">Detail</button>
+                        </td>
+                    </tr>
+                `;
+            });
+        }
+
+        function renderProjectsList(filteredList = projects) {
+            const container = document.getElementById('projectListContainer');
+            container.innerHTML = '';
+
+            if (filteredList.length === 0) {
+                container.innerHTML = `<div class="bg-white p-8 rounded-2xl text-center text-slate-400 text-xs">Tidak ada data proyek yang ditemukan.</div>`;
+                return;
+            }
+
+            filteredList.forEach(p => {
+                let badgeClass = 'bg-amber-50 text-amber-700 border-amber-200';
+                if (p.status === 'Completed') badgeClass = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+                if (p.status === 'On Inspection') badgeClass = 'bg-indigo-50 text-indigo-700 border-indigo-200';
+
+                container.innerHTML += `
+                    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 space-y-4">
+                        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+                            <div>
+                                <div class="flex items-center space-x-2">
+                                    <h3 class="font-black text-slate-900 text-base">${p.unitName}</h3>
+                                    <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${badgeClass}">${p.status}</span>
+                                </div>
+                                <p class="text-xs text-slate-500 mt-0.5">${p.unitType} &bull; No. Unit/Serial: <span class="font-mono font-bold text-slate-700">${p.unitNumber}</span></p>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <button onclick="openTimeline('${p.id}')" class="px-3.5 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800 shadow-sm">
+                                    <i class="fa-solid fa-timeline me-1.5 text-cyan-400"></i> Kelola Proses &amp; Timeline
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Dokumen Acuan -->
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-50 p-3.5 rounded-xl border border-slate-100 text-xs">
+                            <div>
+                                <span class="text-[10px] text-slate-400 font-bold block uppercase">Work Order</span>
+                                <button onclick="previewDoc('${p.documents.wo}')" class="font-mono text-cyan-600 hover:underline font-semibold truncate block w-full text-left">${p.documents.wo}</button>
+                            </div>
+                            <div>
+                                <span class="text-[10px] text-slate-400 font-bold block uppercase">Drawing</span>
+                                <button onclick="previewDoc('${p.documents.drawing}')" class="font-mono text-cyan-600 hover:underline font-semibold truncate block w-full text-left">${p.documents.drawing}</button>
+                            </div>
+                            <div>
+                                <span class="text-[10px] text-slate-400 font-bold block uppercase">Hand Over Memo</span>
+                                <button onclick="previewDoc('${p.documents.handover}')" class="font-mono text-cyan-600 hover:underline font-semibold truncate block w-full text-left">${p.documents.handover}</button>
+                            </div>
+                            <div>
+                                <span class="text-[10px] text-slate-400 font-bold block uppercase">Bill of Material</span>
+                                <button onclick="previewDoc('${p.documents.bom}')" class="font-mono text-cyan-600 hover:underline font-semibold truncate block w-full text-left">${p.documents.bom}</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function filterProjects() {
+            const keyword = document.getElementById('searchInput').value.toLowerCase();
+            const statusFilter = document.getElementById('filterStatus').value;
+
+            const filtered = projects.filter(p => {
+                const matchKeyword = p.unitName.toLowerCase().includes(keyword) ||
+                                     p.unitType.toLowerCase().includes(keyword) ||
+                                     p.unitNumber.toLowerCase().includes(keyword) ||
+                                     p.documents.wo.toLowerCase().includes(keyword);
+                const matchStatus = (statusFilter === 'ALL' || p.status === statusFilter);
+                return matchKeyword && matchStatus;
+            });
+
+            renderProjectsList(filtered);
+        }
+
+        function handleAddProject(e) {
+            e.preventDefault();
+            const newProj = {
+                id: "PRJ-00" + (projects.length + 1),
+                unitName: document.getElementById('newUnitName').value,
+                unitType: document.getElementById('newUnitType').value,
+                unitNumber: document.getElementById('newUnitNumber').value,
+                status: "Not Started",
+                documents: {
+                    wo: document.getElementById('docWO').value || "WO-DRAFT.pdf",
+                    drawing: document.getElementById('docDrawing').value || "DWG-DRAFT.pdf",
+                    handover: document.getElementById('docHandover').value || "HOM-DRAFT.pdf",
+                    bom: document.getElementById('docBOM').value || "BOM-DRAFT.pdf"
+                },
+                processes: {
+                    komponen: { status: "Pending", files: [] },
+                    fabrikasi: { status: "Pending", files: [] },
+                    painting: { status: "Pending", files: [] }
+                }
+            };
+
+            projects.push(newProj);
+            closeModal('addProjectModal');
+            document.getElementById('addProjectForm').reset();
+            renderDashboard();
+            renderProjectsList();
+            showToast('Proyek unit baru berhasil ditambahkan!');
+        }
+
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.remove('hidden');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+        }
+
+        function previewDoc(docName) {
+            document.getElementById('previewDocName').textContent = docName;
+            openModal('previewModal');
+        }
+
+        function openTimeline(projectId) {
+            const p = projects.find(item => item.id === projectId);
+            if (!p) return;
+
+            document.getElementById('timelineUnitName').textContent = p.unitName;
+            document.getElementById('timelineUnitMeta').textContent = `${p.unitType} — ${p.unitNumber}`;
+
+            const container = document.getElementById('timelineContainer');
+            container.innerHTML = '';
+
+            const stages = [
+                { key: 'komponen', label: '1. Pengadaan & Pengecekan Komponen' },
+                { key: 'fabrikasi', label: '2. Proses Fabrikasi & Assembly' },
+                { key: 'painting', label: '3. Painting, Finishing & QC Final' }
+            ];
+
+            stages.forEach((st, idx) => {
+                const stageData = p.processes[st.key];
+                let statusColor = 'bg-slate-200 text-slate-600';
+                if (stageData.status === 'Completed') statusColor = 'bg-emerald-100 text-emerald-700';
+                if (stageData.status === 'In Progress') statusColor = 'bg-amber-100 text-amber-700';
+
+                let filesHtml = stageData.files.map(f => `
+                    <div class="flex items-center justify-between bg-slate-50 px-3 py-2 rounded-lg border border-slate-200 text-xs mt-2">
+                        <span class="font-medium text-slate-700"><i class="fa-solid fa-file-arrow-down me-1.5 text-cyan-600"></i> ${f.name} <span class="text-[10px] text-slate-400">(${f.type})</span></span>
+                        <button onclick="previewDoc('${f.name}')" class="text-cyan-600 hover:underline font-bold">Lihat</button>
+                    </div>
+                `).join('');
+
+                if (stageData.files.length === 0) {
+                    filesHtml = `<p class="text-[11px] text-slate-400 italic mt-2">Belum ada lampiran file pada tahap ini.</p>`;
+                }
+
+                container.innerHTML += `
+                    <div class="relative pl-8 space-y-2">
+                        <div class="absolute left-2.5 -translate-x-1/2 w-3 h-3 rounded-full bg-cyan-600 border-2 border-white ring-4 ring-cyan-50"></div>
+                        <div class="flex items-center justify-between">
+                            <h4 class="font-bold text-slate-900 text-xs">${st.label}</h4>
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${statusColor}">${stageData.status}</span>
+                        </div>
+                        <div class="bg-white p-4 rounded-xl border border-slate-200/80 shadow-sm space-y-2">
+                            ${filesHtml}
+                            <div class="pt-2 flex justify-end">
+                                <button onclick="openUploadModal('${p.id}', '${st.key}', '${st.label}')" class="text-xs bg-cyan-50 hover:bg-cyan-100 text-cyan-700 font-bold px-3 py-1.5 rounded-lg transition-colors">
+                                    <i class="fa-solid fa-plus me-1"></i> Tambah Lampiran / Update
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            openModal('detailTimelineModal');
+        }
+
+        function openUploadModal(projectId, stageKey, stageLabel) {
+            document.getElementById('uploadProjectId').value = projectId;
+            document.getElementById('uploadStageKey').value = stageKey;
+            document.getElementById('uploadModalTitle').textContent = `Upload Lampiran: ${stageLabel}`;
+            openModal('uploadStageModal');
+        }
+
+        function handleStageUpload(e) {
+            e.preventDefault();
+            const projId = document.getElementById('uploadProjectId').value;
+            const stageKey = document.getElementById('uploadStageKey').value;
+            const attName = document.getElementById('attachmentName').value;
+            const attType = document.getElementById('attachmentType').value;
+            const stStatus = document.getElementById('stageStatusUpdate').value;
+
+            const p = projects.find(item => item.id === projId);
+            if (p) {
+                p.processes[stageKey].status = stStatus;
+                p.processes[stageKey].files.push({ name: attName, type: attType });
+
+                // Check overall project status update logic
+                const allStages = ['komponen', 'fabrikasi', 'painting'];
+                const completedCount = allStages.filter(s => p.processes[s].status === 'Completed').length;
+                if (completedCount === 3) p.status = 'Completed';
+                else if (completedCount > 0) p.status = 'In Progress';
+
+                closeModal('uploadStageModal');
+                document.getElementById('uploadStageForm').reset();
+                openTimeline(projId);
+                renderDashboard();
+                renderProjectsList();
+                showToast('Lampiran dan status tahap berhasil diperbarui!');
+            }
+        }
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMsg').textContent = msg;
+            toast.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }, 3500);
+        }
+    </script>
 </body>
 </html>
