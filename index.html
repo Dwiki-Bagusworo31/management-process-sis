@@ -431,9 +431,18 @@
         // ==========================================
         // 1. INISIALISASI SUPABASE (Ganti dengan kunci proyek kamu)
         // ==========================================
-        const SUPABASE_URL = 'https://maveqvmzydqvroohepum.supabase.co/rest/v1/'; 
-        const SUPABASE_ANON_KEY = ''sb_publishable_8pydnk2otFO-29gT0ECYAw_HLQ435mX;
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const SUPABASE_URL = 'https://maveqvmzydqvroohepum.supabase.co'; 
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1hdmVxdm16eWRxdnJvb2hlcHVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMwMjc2MTcsImV4cCI6MjEwODYwMzYxN30.0iJjNR55IdQJ0ewUQnf-ZmbY7bvFJdq241g-cF_Y_LE';
+        
+        let supabase = null;
+        try {
+            if (window.supabase && typeof window.supabase.createClient === 'function') {
+                supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+            }
+        } catch (err) {
+            console.error('Gagal inisialisasi Supabase:', err);
+        }
+
         // Initial Dataset
         let projects = [
             {
@@ -503,10 +512,15 @@
 
         // Init App & Auth State Check
         window.onload = async function() {
-            // Cek apakah user sudah login sebelumnya di sesi ini
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                appLoginSuccess(session.user.email);
+            if (supabase) {
+                try {
+                    const { data: { session } } = await supabase.auth.getSession();
+                    if (session) {
+                        appLoginSuccess(session.user.email);
+                    }
+                } catch (e) {
+                    console.error('Session check error:', e);
+                }
             }
 
             renderDashboard();
@@ -516,71 +530,110 @@
         // ==========================================
         // 2. SUPABASE AUTH HANDLERS (Login & Lupa Sandi)
         // ==========================================
-        document.getElementById('loginForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('loginEmail').value;
-            const password = document.getElementById('loginPassword').value;
-            const msgEl = document.getElementById('loginMessage');
-            const submitBtn = document.getElementById('loginSubmit');
+        const loginForm = document.getElementById('loginForm');
+        if (loginForm) {
+            loginForm.addEventListener('submit', async (e) => {
+                e.preventDefault();
+                const emailInput = document.getElementById('loginEmail');
+                const passwordInput = document.getElementById('loginPassword');
+                const msgEl = document.getElementById('loginMessage');
+                const submitBtn = document.getElementById('loginSubmit');
 
-            msgEl.classList.add('hidden');
-            submitBtn.textContent = 'Memproses...';
-            submitBtn.disabled = true;
+                if (!msgEl || !emailInput || !passwordInput) return;
 
-            const { data, error } = await supabase.auth.signInWithPassword({
-                email: email,
-                password: password
+                msgEl.classList.add('hidden');
+                
+                if (!supabase) {
+                    msgEl.textContent = 'Koneksi Supabase belum terinisialisasi dengan benar.';
+                    msgEl.classList.remove('hidden');
+                    return;
+                }
+
+                submitBtn.textContent = 'Memproses...';
+                submitBtn.disabled = true;
+
+                try {
+                    const { data, error } = await supabase.auth.signInWithPassword({
+                        email: emailInput.value,
+                        password: passwordInput.value
+                    });
+
+                    if (error) {
+                        msgEl.textContent = error.message;
+                        msgEl.classList.remove('hidden');
+                    } else if (data && data.user) {
+                        appLoginSuccess(data.user.email);
+                    }
+                } catch (err) {
+                    msgEl.textContent = 'Terjadi kesalahan sistem: ' + err.message;
+                    msgEl.classList.remove('hidden');
+                } finally {
+                    submitBtn.textContent = 'Masuk';
+                    submitBtn.disabled = false;
+                }
             });
+        }
 
-            submitBtn.textContent = 'Masuk';
-            submitBtn.disabled = false;
+        const forgotPasswordBtn = document.getElementById('forgotPasswordButton');
+        if (forgotPasswordBtn) {
+            forgotPasswordBtn.addEventListener('click', async () => {
+                const emailInput = document.getElementById('loginEmail');
+                const msgEl = document.getElementById('loginMessage');
 
-            if (error) {
-                msgEl.textContent = error.message;
-                msgEl.classList.remove('hidden');
-            } else {
-                appLoginSuccess(data.user.email);
-            }
-        });
+                if (!msgEl || !emailInput) return;
 
-        document.getElementById('forgotPasswordButton').addEventListener('click', async () => {
-            const email = document.getElementById('loginEmail').value;
-            const msgEl = document.getElementById('loginMessage');
+                if (!emailInput.value) {
+                    msgEl.textContent = 'Masukkan email Anda terlebih dahulu pada kolom Email di atas untuk reset password.';
+                    msgEl.classList.remove('hidden', 'text-emerald-600');
+                    msgEl.classList.add('text-rose-600');
+                    return;
+                }
 
-            if (!email) {
-                msgEl.textContent = 'Masukkan email Anda terlebih dahulu pada kolom Email di atas untuk reset password.';
-                msgEl.classList.remove('hidden', 'text-emerald-600');
-                msgEl.classList.add('text-rose-600');
-                return;
-            }
+                if (!supabase) {
+                    msgEl.textContent = 'Koneksi Supabase belum terinisialisasi dengan benar.';
+                    msgEl.classList.remove('hidden', 'text-emerald-600');
+                    msgEl.classList.add('text-rose-600');
+                    return;
+                }
 
-            const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-                redirectTo: window.location.href,
+                const { data, error } = await supabase.auth.resetPasswordForEmail(emailInput.value, {
+                    redirectTo: window.location.href,
+                });
+
+                if (error) {
+                    msgEl.textContent = error.message;
+                    msgEl.classList.remove('hidden', 'text-emerald-600');
+                    msgEl.classList.add('text-rose-600');
+                } else {
+                    msgEl.textContent = 'Tautan pemulihan kata sandi telah dikirim ke email Anda.';
+                    msgEl.classList.remove('hidden', 'text-rose-600');
+                    msgEl.classList.add('text-emerald-600');
+                }
             });
-
-            if (error) {
-                msgEl.textContent = error.message;
-                msgEl.classList.remove('hidden', 'text-emerald-600');
-                msgEl.classList.add('text-rose-600');
-            } else {
-                msgEl.textContent = 'Tautan pemulihan kata sandi telah dikirim ke email Anda.';
-                msgEl.classList.remove('hidden', 'text-rose-600');
-                msgEl.classList.add('text-emerald-600');
-            }
-        });
+        }
 
         function appLoginSuccess(email) {
-            document.getElementById('loginScreen').classList.add('hidden');
-            document.getElementById('sisApp').classList.remove('hidden');
-            document.getElementById('sisUserEmail').textContent = email;
+            const loginScreen = document.getElementById('loginScreen');
+            const sisApp = document.getElementById('sisApp');
+            const sisUserEmail = document.getElementById('sisUserEmail');
+
+            if (loginScreen) loginScreen.classList.add('hidden');
+            if (sisApp) sisApp.classList.remove('hidden');
+            if (sisUserEmail) sisUserEmail.textContent = email;
             showToast('Berhasil masuk ke sistem.');
         }
 
         async function logoutSIS() {
-            await supabase.auth.signOut();
-            document.getElementById('sisApp').classList.add('hidden');
-            document.getElementById('loginScreen').classList.remove('hidden');
-            document.getElementById('loginPassword').value = '';
+            if (supabase) {
+                await supabase.auth.signOut();
+            }
+            const loginScreen = document.getElementById('loginScreen');
+            const sisApp = document.getElementById('sisApp');
+            const loginPassword = document.getElementById('loginPassword');
+
+            if (sisApp) sisApp.classList.add('hidden');
+            if (loginScreen) loginScreen.classList.remove('hidden');
+            if (loginPassword) loginPassword.value = '';
             showToast('Anda telah keluar.');
         }
 
@@ -597,33 +650,39 @@
             const mBtnProj = document.getElementById('mobile-nav-projects');
 
             if (viewName === 'dashboard') {
-                dashView.classList.remove('hidden');
-                projView.classList.add('hidden');
+                if (dashView) dashView.classList.remove('hidden');
+                if (projView) projView.classList.add('hidden');
 
-                btnDash.className = "px-4 py-2 rounded-lg text-xs font-semibold transition-all bg-cyan-500 text-white shadow-sm";
-                btnProj.className = "px-4 py-2 rounded-lg text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-700 transition-all";
-                mBtnDash.className = "text-xs font-semibold text-cyan-400 py-1";
-                mBtnProj.className = "text-xs font-semibold text-slate-400 py-1";
+                if (btnDash) btnDash.className = "px-4 py-2 rounded-lg text-xs font-semibold transition-all bg-cyan-500 text-white shadow-sm";
+                if (btnProj) btnProj.className = "px-4 py-2 rounded-lg text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-700 transition-all";
+                if (mBtnDash) mBtnDash.className = "text-xs font-semibold text-cyan-400 py-1";
+                if (mBtnProj) mBtnProj.className = "text-xs font-semibold text-slate-400 py-1";
                 renderDashboard();
             } else {
-                dashView.classList.add('hidden');
-                projView.classList.remove('hidden');
+                if (dashView) dashView.classList.add('hidden');
+                if (projView) projView.classList.remove('hidden');
 
-                btnProj.className = "px-4 py-2 rounded-lg text-xs font-semibold transition-all bg-cyan-500 text-white shadow-sm";
-                btnDash.className = "px-4 py-2 rounded-lg text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-700 transition-all";
-                mBtnProj.className = "text-xs font-semibold text-cyan-400 py-1";
-                mBtnDash.className = "text-xs font-semibold text-slate-400 py-1";
+                if (btnProj) btnProj.className = "px-4 py-2 rounded-lg text-xs font-semibold transition-all bg-cyan-500 text-white shadow-sm";
+                if (btnDash) btnDash.className = "px-4 py-2 rounded-lg text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-700 transition-all";
+                if (mBtnProj) mBtnProj.className = "text-xs font-semibold text-cyan-400 py-1";
+                if (mBtnDash) mBtnDash.className = "text-xs font-semibold text-slate-400 py-1";
                 renderProjectsList();
             }
         }
 
         function renderDashboard() {
-            document.getElementById('stat-total').textContent = projects.length;
-            document.getElementById('stat-progress').textContent = projects.filter(p => p.status === 'In Progress').length;
-            document.getElementById('stat-inspection').textContent = projects.filter(p => p.status === 'On Inspection').length;
-            document.getElementById('stat-completed').textContent = projects.filter(p => p.status === 'Completed').length;
+            const statTotal = document.getElementById('stat-total');
+            const statProgress = document.getElementById('stat-progress');
+            const statInspection = document.getElementById('stat-inspection');
+            const statCompleted = document.getElementById('stat-completed');
+
+            if (statTotal) statTotal.textContent = projects.length;
+            if (statProgress) statProgress.textContent = projects.filter(p => p.status === 'In Progress').length;
+            if (statInspection) statInspection.textContent = projects.filter(p => p.status === 'On Inspection').length;
+            if (statCompleted) statCompleted.textContent = projects.filter(p => p.status === 'Completed').length;
 
             const tbody = document.getElementById('recentProjectsTable');
+            if (!tbody) return;
             tbody.innerHTML = '';
 
             projects.slice(-3).reverse().forEach(p => {
@@ -647,6 +706,7 @@
 
         function renderProjectsList(filteredList = projects) {
             const container = document.getElementById('projectListContainer');
+            if (!container) return;
             container.innerHTML = '';
 
             if (filteredList.length === 0) {
@@ -701,8 +761,12 @@
         }
 
         function filterProjects() {
-            const keyword = document.getElementById('searchInput').value.toLowerCase();
-            const statusFilter = document.getElementById('filterStatus').value;
+            const searchInput = document.getElementById('searchInput');
+            const filterStatus = document.getElementById('filterStatus');
+            if (!searchInput || !filterStatus) return;
+
+            const keyword = searchInput.value.toLowerCase();
+            const statusFilter = filterStatus.value;
 
             const filtered = projects.filter(p => {
                 const matchKeyword = p.unitName.toLowerCase().includes(keyword) ||
@@ -718,17 +782,27 @@
 
         function handleAddProject(e) {
             e.preventDefault();
+            const newUnitName = document.getElementById('newUnitName');
+            const newUnitType = document.getElementById('newUnitType');
+            const newUnitNumber = document.getElementById('newUnitNumber');
+            const docWO = document.getElementById('docWO');
+            const docDrawing = document.getElementById('docDrawing');
+            const docHandover = document.getElementById('docHandover');
+            const docBOM = document.getElementById('docBOM');
+
+            if (!newUnitName || !newUnitType || !newUnitNumber) return;
+
             const newProj = {
                 id: "PRJ-00" + (projects.length + 1),
-                unitName: document.getElementById('newUnitName').value,
-                unitType: document.getElementById('newUnitType').value,
-                unitNumber: document.getElementById('newUnitNumber').value,
+                unitName: newUnitName.value,
+                unitType: newUnitType.value,
+                unitNumber: newUnitNumber.value,
                 status: "Not Started",
                 documents: {
-                    wo: document.getElementById('docWO').value || "WO-DRAFT.pdf",
-                    drawing: document.getElementById('docDrawing').value || "DWG-DRAFT.pdf",
-                    handover: document.getElementById('docHandover').value || "HOM-DRAFT.pdf",
-                    bom: document.getElementById('docBOM').value || "BOM-DRAFT.pdf"
+                    wo: (docWO && docWO.value) ? docWO.value : "WO-DRAFT.pdf",
+                    drawing: (docDrawing && docDrawing.value) ? docDrawing.value : "DWG-DRAFT.pdf",
+                    handover: (docHandover && docHandover.value) ? docHandover.value : "HOM-DRAFT.pdf",
+                    bom: (docBOM && docBOM.value) ? docBOM.value : "BOM-DRAFT.pdf"
                 },
                 processes: {
                     komponen: { status: "Pending", files: [] },
@@ -739,22 +813,26 @@
 
             projects.push(newProj);
             closeModal('addProjectModal');
-            document.getElementById('addProjectForm').reset();
+            const form = document.getElementById('addProjectForm');
+            if (form) form.reset();
             renderDashboard();
             renderProjectsList();
             showToast('Proyek unit baru berhasil ditambahkan!');
         }
 
         function openModal(modalId) {
-            document.getElementById(modalId).classList.remove('hidden');
+            const m = document.getElementById(modalId);
+            if (m) m.classList.remove('hidden');
         }
 
         function closeModal(modalId) {
-            document.getElementById(modalId).classList.add('hidden');
+            const m = document.getElementById(modalId);
+            if (m) m.classList.add('hidden');
         }
 
         function previewDoc(docName) {
-            document.getElementById('previewDocName').textContent = docName;
+            const previewDocName = document.getElementById('previewDocName');
+            if (previewDocName) previewDocName.textContent = docName;
             openModal('previewModal');
         }
 
@@ -762,10 +840,13 @@
             const p = projects.find(item => item.id === projectId);
             if (!p) return;
 
-            document.getElementById('timelineUnitName').textContent = p.unitName;
-            document.getElementById('timelineUnitMeta').textContent = `${p.unitType} — ${p.unitNumber}`;
+            const timelineUnitName = document.getElementById('timelineUnitName');
+            const timelineUnitMeta = document.getElementById('timelineUnitMeta');
+            if (timelineUnitName) timelineUnitName.textContent = p.unitName;
+            if (timelineUnitMeta) timelineUnitMeta.textContent = `${p.unitType} — ${p.unitNumber}`;
 
             const container = document.getElementById('timelineContainer');
+            if (!container) return;
             container.innerHTML = '';
 
             const stages = [
@@ -774,7 +855,7 @@
                 { key: 'painting', label: '3. Painting, Finishing & QC Final' }
             ];
 
-            stages.forEach((st, idx) => {
+            stages.forEach((st) => {
                 const stageData = p.processes[st.key];
                 let statusColor = 'bg-slate-200 text-slate-600';
                 if (stageData.status === 'Completed') statusColor = 'bg-emerald-100 text-emerald-700';
@@ -814,33 +895,45 @@
         }
 
         function openUploadModal(projectId, stageKey, stageLabel) {
-            document.getElementById('uploadProjectId').value = projectId;
-            document.getElementById('uploadStageKey').value = stageKey;
-            document.getElementById('uploadModalTitle').textContent = `Upload Lampiran: ${stageLabel}`;
+            const upProjId = document.getElementById('uploadProjectId');
+            const upStageKey = document.getElementById('uploadStageKey');
+            const upModalTitle = document.getElementById('uploadModalTitle');
+
+            if (upProjId) upProjId.value = projectId;
+            if (upStageKey) upStageKey.value = stageKey;
+            if (upModalTitle) upModalTitle.textContent = `Upload Lampiran: ${stageLabel}`;
             openModal('uploadStageModal');
         }
 
         function handleStageUpload(e) {
             e.preventDefault();
-            const projId = document.getElementById('uploadProjectId').value;
-            const stageKey = document.getElementById('uploadStageKey').value;
-            const attName = document.getElementById('attachmentName').value;
-            const attType = document.getElementById('attachmentType').value;
-            const stStatus = document.getElementById('stageStatusUpdate').value;
+            const projIdEl = document.getElementById('uploadProjectId');
+            const stageKeyEl = document.getElementById('uploadStageKey');
+            const attNameEl = document.getElementById('attachmentName');
+            const attTypeEl = document.getElementById('attachmentType');
+            const stStatusEl = document.getElementById('stageStatusUpdate');
+
+            if (!projIdEl || !stageKeyEl || !attNameEl || !attTypeEl || !stStatusEl) return;
+
+            const projId = projIdEl.value;
+            const stageKey = stageKeyEl.value;
+            const attName = attNameEl.value;
+            const attType = attTypeEl.value;
+            const stStatus = stStatusEl.value;
 
             const p = projects.find(item => item.id === projId);
             if (p) {
                 p.processes[stageKey].status = stStatus;
                 p.processes[stageKey].files.push({ name: attName, type: attType });
 
-                // Check overall project status update logic
                 const allStages = ['komponen', 'fabrikasi', 'painting'];
                 const completedCount = allStages.filter(s => p.processes[s].status === 'Completed').length;
                 if (completedCount === 3) p.status = 'Completed';
                 else if (completedCount > 0) p.status = 'In Progress';
 
                 closeModal('uploadStageModal');
-                document.getElementById('uploadStageForm').reset();
+                const form = document.getElementById('uploadStageForm');
+                if (form) form.reset();
                 openTimeline(projId);
                 renderDashboard();
                 renderProjectsList();
@@ -850,7 +943,10 @@
 
         function showToast(msg) {
             const toast = document.getElementById('toast');
-            document.getElementById('toastMsg').textContent = msg;
+            const toastMsg = document.getElementById('toastMsg');
+            if (!toast || !toastMsg) return;
+
+            toastMsg.textContent = msg;
             toast.classList.remove('translate-y-20', 'opacity-0');
             setTimeout(() => {
                 toast.classList.add('translate-y-20', 'opacity-0');
