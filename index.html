@@ -18,7 +18,6 @@ button:disabled{opacity:.6;cursor:wait}
 </head>
 <body class="min-h-screen text-slate-800 antialiased">
 
-<!-- LOGIN -->
 <section id="loginScreen" class="min-h-screen flex items-center justify-center bg-slate-950 px-4 py-10 fixed inset-0 z-50">
  <div class="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden">
   <div class="bg-slate-900 px-7 py-6 text-white">
@@ -45,7 +44,6 @@ button:disabled{opacity:.6;cursor:wait}
    <p class="text-[11px] text-slate-400 text-center pt-2">Akun dibuat melalui Supabase Authentication oleh administrator.</p>
   </form>
 
-  <!-- FORM PASSWORD BARU -->
   <form id="resetPasswordForm" class="p-7 space-y-4 hidden">
    <h2 class="text-lg font-bold text-slate-900">Buat Password Baru</h2>
    <p class="text-xs text-slate-500">Masukkan password baru untuk akun Anda.</p>
@@ -64,7 +62,6 @@ button:disabled{opacity:.6;cursor:wait}
  </div>
 </section>
 
-<!-- APLIKASI -->
 <div id="sisApp" class="hidden min-h-screen flex-col">
  <div class="bg-cyan-50 border-b border-cyan-100 px-4 py-2 flex items-center justify-end gap-3 text-xs">
   <span id="sisUserEmail" class="font-semibold text-slate-600"></span>
@@ -122,7 +119,6 @@ button:disabled{opacity:.6;cursor:wait}
  </main>
 </div>
 
-<!-- MODAL TAMBAH PROYEK -->
 <div id="addProjectModal" class="hidden fixed inset-0 z-40 bg-slate-900/60 flex items-center justify-center p-4">
  <div class="bg-white rounded-2xl max-w-xl w-full max-h-[90vh] overflow-y-auto p-6">
   <div class="flex justify-between items-center mb-5"><h3 class="font-bold">Tambah Unit Proyek Baru</h3><button onclick="closeModal('addProjectModal')">✕</button></div>
@@ -145,7 +141,6 @@ button:disabled{opacity:.6;cursor:wait}
  </div>
 </div>
 
-<!-- MODAL TIMELINE -->
 <div id="detailTimelineModal" class="hidden fixed inset-0 z-40 bg-slate-900/60 flex items-center justify-center p-4">
  <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6">
   <div class="flex justify-between mb-5"><div><h3 id="timelineUnitName" class="font-bold"></h3><p id="timelineUnitMeta" class="text-xs text-slate-500"></p></div><button onclick="closeModal('detailTimelineModal')">✕</button></div>
@@ -153,7 +148,6 @@ button:disabled{opacity:.6;cursor:wait}
  </div>
 </div>
 
-<!-- MODAL UPDATE TAHAP -->
 <div id="uploadStageModal" class="hidden fixed inset-0 z-40 bg-slate-900/60 flex items-center justify-center p-4">
  <div class="bg-white rounded-2xl max-w-md w-full p-6">
   <div class="flex justify-between mb-5"><h3 id="uploadModalTitle" class="font-bold text-sm">Update Tahap</h3><button onclick="closeModal('uploadStageModal')">✕</button></div>
@@ -170,56 +164,34 @@ button:disabled{opacity:.6;cursor:wait}
 <div id="toast" class="fixed bottom-5 right-5 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-xl text-xs hidden z-[60]"><span id="toastMsg"></span></div>
 
 <script>
-/* =========================
-   KONFIGURASI SUPABASE
-   ========================= */
+/* KONFIGURASI SUPABASE */
 const SUPABASE_URL = 'https://maveqvmzydqvroohepum.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1hdmVxdm16eWRxdnJvb2hlcHVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMwMjc2MTcsImV4cCI6MjEwODYwMzYxN30.0iJjNR55IdQJ0ewUQnf-ZmbY7bvFJdq241g-cF_Y_LE';
 
-let supabase = null;
+/* PENTING: gunakan supabaseClient agar tidak bentrok dengan global window.supabase */
+let supabaseClient = null;
 let recoveryMode = false;
 let toastTimer = null;
 
 try {
  if (window.supabase && typeof window.supabase.createClient === 'function') {
-  supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-   auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-    detectSessionInUrl: true
-   }
+  supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+   auth: {persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}
   });
+ } else {
+  console.error('Supabase SDK belum berhasil dimuat.');
  }
-} catch (error) {
- console.error('Supabase initialization error:', error);
+} catch(error) {
+ console.error('Supabase initialization error:',error);
 }
 
-/* =========================
-   DATA PROYEK DEMO
-   Catatan: data ini tersimpan
-   sementara di memori browser.
-   ========================= */
 let projects = [
- {
-  id:'PRJ-001',unitName:'Hoist Crane Structure 10 Ton',unitType:'Heavy Equipment',
-  unitNumber:'CRN-2026-A01',status:'In Progress',
+ {id:'PRJ-001',unitName:'Hoist Crane Structure 10 Ton',unitType:'Heavy Equipment',unitNumber:'CRN-2026-A01',status:'In Progress',
   documents:{wo:'WO-2026-CRN01.pdf',drawing:'DWG-CRN10T-REV2.pdf',handover:'HOM-CRN-01.pdf',bom:'BOM-CRN-10T.pdf'},
-  processes:{
-   komponen:{status:'Completed',files:[{name:'Sertifikat Steel Plate SS400.pdf',type:'Dokumen PDF'}]},
-   fabrikasi:{status:'In Progress',files:[{name:'Laporan Pengelasan Structure.pdf',type:'Laporan QC'}]},
-   painting:{status:'Pending',files:[]}
-  }
- },
- {
-  id:'PRJ-002',unitName:'Conveyor Belt System Line B',unitType:'Custom Conveyor Unit',
-  unitNumber:'CNV-2026-B05',status:'Completed',
+  processes:{komponen:{status:'Completed',files:[{name:'Sertifikat Steel Plate SS400.pdf',type:'Dokumen PDF'}]},fabrikasi:{status:'In Progress',files:[{name:'Laporan Pengelasan Structure.pdf',type:'Laporan QC'}]},painting:{status:'Pending',files:[]}}},
+ {id:'PRJ-002',unitName:'Conveyor Belt System Line B',unitType:'Custom Conveyor Unit',unitNumber:'CNV-2026-B05',status:'Completed',
   documents:{wo:'WO-2026-CNV05.pdf',drawing:'DWG-CNV-LINEB.pdf',handover:'HOM-CNV-FINAL.pdf',bom:'BOM-CNV-FULL.pdf'},
-  processes:{
-   komponen:{status:'Completed',files:[{name:'Checklist Roller & Motor.pdf',type:'Dokumen PDF'}]},
-   fabrikasi:{status:'Completed',files:[{name:'Foto Fabrikasi Frame.jpg',type:'Foto Bukti'}]},
-   painting:{status:'Completed',files:[{name:'Laporan Ketebalan Cat QC.pdf',type:'Laporan QC'}]}
-  }
- }
+  processes:{komponen:{status:'Completed',files:[{name:'Checklist Roller & Motor.pdf',type:'Dokumen PDF'}]},fabrikasi:{status:'Completed',files:[{name:'Foto Fabrikasi Frame.jpg',type:'Foto Bukti'}]},painting:{status:'Completed',files:[{name:'Laporan Ketebalan Cat QC.pdf',type:'Laporan QC'}]}}}
 ];
 
 const stages = [
@@ -230,330 +202,277 @@ const stages = [
 
 function $(id){return document.getElementById(id);}
 
-function showMessage(element, message, success=false) {
- if (!element) return;
- element.textContent = message;
- element.className = 'text-xs font-medium p-3 rounded-xl ' +
-  (success ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-           : 'bg-rose-50 text-rose-700 border border-rose-200');
+function showMessage(element,message,success=false){
+ if(!element)return;
+ element.textContent=message;
+ element.className='text-xs font-medium p-3 rounded-xl '+(success?'bg-emerald-50 text-emerald-700 border border-emerald-200':'bg-rose-50 text-rose-700 border border-rose-200');
  element.classList.remove('hidden');
 }
-
-function clearMessage(element) {
- if (!element) return;
- element.textContent = '';
+function clearMessage(element){
+ if(!element)return;
+ element.textContent='';
  element.classList.add('hidden');
 }
-
-function setBusy(button, busy, busyText, normalText) {
- if (!button) return;
- button.disabled = busy;
- button.textContent = busy ? busyText : normalText;
+function setBusy(button,busy,busyText,normalText){
+ if(!button)return;
+ button.disabled=busy;
+ button.textContent=busy?busyText:normalText;
 }
-
-function showLoginMessage(message, success=false) {
- showMessage($('loginMessage'), message, success);
-}
-
-function setRecoveryView(enabled) {
- recoveryMode = enabled;
- $('loginForm').classList.toggle('hidden', enabled);
- $('resetPasswordForm').classList.toggle('hidden', !enabled);
- $('loginSubtitle').textContent = enabled
-  ? 'Silakan buat password baru untuk akun Anda.'
-  : 'Silakan masuk untuk membuka dashboard.';
+function showLoginMessage(message,success=false){showMessage($('loginMessage'),message,success);}
+function setRecoveryView(enabled){
+ recoveryMode=enabled;
+ $('loginForm').classList.toggle('hidden',enabled);
+ $('resetPasswordForm').classList.toggle('hidden',!enabled);
+ $('loginSubtitle').textContent=enabled?'Silakan buat password baru untuk akun Anda.':'Silakan masuk untuk membuka dashboard.';
  clearMessage($('loginMessage'));
  clearMessage($('resetMessage'));
 }
-
-function appLoginSuccess(email) {
+function appLoginSuccess(email){
  $('loginScreen').classList.add('hidden');
  $('sisApp').classList.remove('hidden');
  $('sisApp').classList.add('flex');
- $('sisUserEmail').textContent = email || '';
+ $('sisUserEmail').textContent=email||'';
  renderDashboard();
  renderProjectsList();
 }
-
-function appShowLogin() {
+function appShowLogin(){
  $('sisApp').classList.add('hidden');
  $('sisApp').classList.remove('flex');
  $('loginScreen').classList.remove('hidden');
- $('loginPassword').value = '';
+ $('loginPassword').value='';
  clearMessage($('loginMessage'));
 }
 
-/* =========================
-   LOGIN
-   ========================= */
-$('loginForm').addEventListener('submit', async function(event) {
+/* LOGIN */
+$('loginForm').addEventListener('submit',async function(event){
  event.preventDefault();
  clearMessage($('loginMessage'));
+ const email=$('loginEmail').value.trim();
+ const password=$('loginPassword').value;
+ const button=$('loginSubmit');
 
- const email = $('loginEmail').value.trim();
- const password = $('loginPassword').value;
- const button = $('loginSubmit');
-
- if (!supabase) {
+ if(!supabaseClient){
   showLoginMessage('Supabase tidak berhasil terhubung. Periksa koneksi internet dan konfigurasi Supabase.');
   return;
  }
-
- if (!email || !password) {
+ if(!email||!password){
   showLoginMessage('Email dan password wajib diisi.');
   return;
  }
 
- setBusy(button, true, 'Memproses...', 'Masuk');
-
- try {
-  const {data, error} = await supabase.auth.signInWithPassword({email, password});
-
-  if (error) {
-   console.error('Login error:', error);
-   const message = error.message || '';
-   if (/invalid login credentials/i.test(message)) {
+ setBusy(button,true,'Memproses...','Masuk');
+ try{
+  const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});
+  if(error){
+   console.error('Login error:',error);
+   const message=error.message||'';
+   if(/invalid login credentials/i.test(message)){
     showLoginMessage('Email atau password salah. Periksa kembali atau gunakan Lupa Sandi.');
-   } else if (/email not confirmed/i.test(message)) {
+   }else if(/email not confirmed/i.test(message)){
     showLoginMessage('Email belum dikonfirmasi. Hubungi administrator Supabase.');
-   } else {
-    showLoginMessage('Login gagal: ' + message);
+   }else{
+    showLoginMessage('Login gagal: '+message);
    }
    return;
   }
-
-  if (data && data.user) {
+  if(data&&data.user){
    appLoginSuccess(data.user.email);
-  } else {
+  }else{
    showLoginMessage('Login belum berhasil. Silakan coba kembali.');
   }
- } catch (error) {
-  console.error('Login exception:', error);
+ }catch(error){
+  console.error('Login exception:',error);
   showLoginMessage('Terjadi kesalahan saat login. Periksa koneksi internet lalu coba kembali.');
- } finally {
-  setBusy(button, false, 'Memproses...', 'Masuk');
+ }finally{
+  setBusy(button,false,'Memproses...','Masuk');
  }
 });
 
-/* =========================
-   LUPA PASSWORD
-   ========================= */
-$('forgotPasswordButton').addEventListener('click', async function() {
+/* LUPA PASSWORD */
+$('forgotPasswordButton').addEventListener('click',async function(){
  clearMessage($('loginMessage'));
+ const email=$('loginEmail').value.trim();
 
- const email = $('loginEmail').value.trim();
-
- if (!email) {
+ if(!email){
   showLoginMessage('Masukkan alamat email pada kolom Email terlebih dahulu.');
   $('loginEmail').focus();
   return;
  }
-
- if (!$('loginEmail').checkValidity()) {
+ if(!$('loginEmail').checkValidity()){
   showLoginMessage('Format email belum benar. Periksa kembali alamat email Anda.');
   $('loginEmail').focus();
   return;
  }
-
- if (!supabase) {
+ if(!supabaseClient){
   showLoginMessage('Supabase tidak berhasil terhubung. Periksa konfigurasi dan koneksi internet.');
   return;
  }
 
- const button = $('forgotPasswordButton');
- button.disabled = true;
- button.textContent = 'Mengirim tautan...';
-
- try {
-  const redirectUrl = window.location.origin + window.location.pathname;
-  const {error} = await supabase.auth.resetPasswordForEmail(email, {
-   redirectTo: redirectUrl
-  });
-
-  if (error) {
-   console.error('Password reset error:', error);
-   showLoginMessage('Gagal mengirim tautan reset: ' + error.message);
-  } else {
-   showLoginMessage('Jika email tersebut terdaftar, tautan pemulihan akan dikirim. Periksa Inbox dan folder Spam.', true);
+ const button=$('forgotPasswordButton');
+ button.disabled=true;
+ button.textContent='Mengirim tautan...';
+ try{
+  const redirectUrl=window.location.origin+window.location.pathname;
+  const {error}=await supabaseClient.auth.resetPasswordForEmail(email,{redirectTo:redirectUrl});
+  if(error){
+   console.error('Password reset error:',error);
+   showLoginMessage('Gagal mengirim tautan reset: '+error.message);
+  }else{
+   showLoginMessage('Jika email tersebut terdaftar, tautan pemulihan akan dikirim. Periksa Inbox dan folder Spam.',true);
   }
- } catch (error) {
-  console.error('Password reset exception:', error);
+ }catch(error){
+  console.error('Password reset exception:',error);
   showLoginMessage('Terjadi kesalahan saat meminta reset password. Silakan coba kembali.');
- } finally {
-  button.disabled = false;
-  button.textContent = 'Lupa Sandi?';
+ }finally{
+  button.disabled=false;
+  button.textContent='Lupa Sandi?';
  }
 });
 
-/* =========================
-   SIMPAN PASSWORD BARU
-   ========================= */
-$('resetPasswordForm').addEventListener('submit', async function(event) {
+/* SIMPAN PASSWORD BARU */
+$('resetPasswordForm').addEventListener('submit',async function(event){
  event.preventDefault();
  clearMessage($('resetMessage'));
+ const password=$('newPassword').value;
+ const confirmPassword=$('confirmPassword').value;
+ const button=$('resetSubmit');
 
- const password = $('newPassword').value;
- const confirmPassword = $('confirmPassword').value;
- const button = $('resetSubmit');
-
- if (password.length < 8) {
-  showMessage($('resetMessage'), 'Password harus memiliki minimal 8 karakter.');
+ if(password.length<8){
+  showMessage($('resetMessage'),'Password harus memiliki minimal 8 karakter.');
+  return;
+ }
+ if(password!==confirmPassword){
+  showMessage($('resetMessage'),'Konfirmasi password tidak sama.');
+  return;
+ }
+ if(!supabaseClient){
+  showMessage($('resetMessage'),'Supabase tidak berhasil terhubung.');
   return;
  }
 
- if (password !== confirmPassword) {
-  showMessage($('resetMessage'), 'Konfirmasi password tidak sama.');
-  return;
- }
-
- if (!supabase) {
-  showMessage($('resetMessage'), 'Supabase tidak berhasil terhubung.');
-  return;
- }
-
- setBusy(button, true, 'Menyimpan...', 'Simpan Password Baru');
-
- try {
-  const {data: sessionData, error: sessionError} = await supabase.auth.getSession();
-
-  if (sessionError || !sessionData.session) {
-   showMessage($('resetMessage'), 'Sesi pemulihan tidak valid atau sudah kedaluwarsa. Minta tautan reset baru.');
+ setBusy(button,true,'Menyimpan...','Simpan Password Baru');
+ try{
+  const {data:sessionData,error:sessionError}=await supabaseClient.auth.getSession();
+  if(sessionError||!sessionData.session){
+   showMessage($('resetMessage'),'Sesi pemulihan tidak valid atau sudah kedaluwarsa. Minta tautan reset baru.');
    return;
   }
-
-  const {error} = await supabase.auth.updateUser({password});
-
-  if (error) {
-   console.error('Update password error:', error);
-   showMessage($('resetMessage'), 'Password gagal diperbarui: ' + error.message);
+  const {error}=await supabaseClient.auth.updateUser({password});
+  if(error){
+   console.error('Update password error:',error);
+   showMessage($('resetMessage'),'Password gagal diperbarui: '+error.message);
    return;
   }
-
-  await supabase.auth.signOut();
+  await supabaseClient.auth.signOut();
   setRecoveryView(false);
-  $('loginPassword').value = '';
-  showLoginMessage('Password berhasil diperbarui. Silakan login menggunakan password baru.', true);
- } catch (error) {
-  console.error('Update password exception:', error);
-  showMessage($('resetMessage'), 'Terjadi kesalahan saat memperbarui password. Coba kembali.');
- } finally {
-  setBusy(button, false, 'Menyimpan...', 'Simpan Password Baru');
+  $('loginPassword').value='';
+  showLoginMessage('Password berhasil diperbarui. Silakan login menggunakan password baru.',true);
+ }catch(error){
+  console.error('Update password exception:',error);
+  showMessage($('resetMessage'),'Terjadi kesalahan saat memperbarui password. Coba kembali.');
+ }finally{
+  setBusy(button,false,'Menyimpan...','Simpan Password Baru');
  }
 });
 
-$('backToLoginButton').addEventListener('click', async function() {
- if (supabase) {
-  try { await supabase.auth.signOut(); } catch (error) { console.error(error); }
+$('backToLoginButton').addEventListener('click',async function(){
+ if(supabaseClient){
+  try{await supabaseClient.auth.signOut();}catch(error){console.error(error);}
  }
  setRecoveryView(false);
  appShowLogin();
 });
+$('logoutButton').addEventListener('click',logoutSIS);
 
-$('logoutButton').addEventListener('click', logoutSIS);
-
-async function logoutSIS() {
- if (supabase) {
-  try {
-   const {error} = await supabase.auth.signOut();
-   if (error) console.error('Logout error:', error);
-  } catch (error) {
-   console.error('Logout exception:', error);
+async function logoutSIS(){
+ if(supabaseClient){
+  try{
+   const {error}=await supabaseClient.auth.signOut();
+   if(error)console.error('Logout error:',error);
+  }catch(error){
+   console.error('Logout exception:',error);
   }
  }
  appShowLogin();
  showToast('Anda telah keluar.');
 }
 
-/* Pantau sesi dan tautan pemulihan dari Supabase */
-if (supabase) {
- supabase.auth.onAuthStateChange((event, session) => {
-  if (event === 'PASSWORD_RECOVERY') {
+/* SESI DAN PEMULIHAN PASSWORD */
+if(supabaseClient){
+ supabaseClient.auth.onAuthStateChange((event,session)=>{
+  if(event==='PASSWORD_RECOVERY'){
    setRecoveryView(true);
    $('loginScreen').classList.remove('hidden');
    $('sisApp').classList.add('hidden');
    $('sisApp').classList.remove('flex');
    return;
   }
-
-  if (event === 'SIGNED_OUT') {
+  if(event==='SIGNED_OUT'){
    appShowLogin();
    return;
   }
-
-  if (session && session.user && !recoveryMode) {
+  if(session&&session.user&&!recoveryMode){
    appLoginSuccess(session.user.email);
   }
  });
 
- window.addEventListener('load', async () => {
-  try {
-   const {data, error} = await supabase.auth.getSession();
-   if (error) console.error('Session check error:', error);
+ window.addEventListener('load',async()=>{
+  try{
+   const {data,error}=await supabaseClient.auth.getSession();
+   if(error)console.error('Session check error:',error);
+   const hash=window.location.hash||'';
+   const params=new URLSearchParams(hash.replace(/^#/,''));
+   const isRecovery=params.get('type')==='recovery';
 
-   const hash = window.location.hash || '';
-   const params = new URLSearchParams(hash.replace(/^#/, ''));
-   const isRecovery = params.get('type') === 'recovery';
-
-   if (isRecovery) {
+   if(isRecovery){
     setRecoveryView(true);
     $('loginScreen').classList.remove('hidden');
     $('sisApp').classList.add('hidden');
     $('sisApp').classList.remove('flex');
-   } else if (data.session && data.session.user) {
+   }else if(data.session&&data.session.user){
     appLoginSuccess(data.session.user.email);
-   } else {
+   }else{
     appShowLogin();
    }
-  } catch (error) {
-   console.error('Session initialization error:', error);
+  }catch(error){
+   console.error('Session initialization error:',error);
    appShowLogin();
   }
  });
-} else {
- window.addEventListener('load', () => {
+}else{
+ window.addEventListener('load',()=>{
   showLoginMessage('Supabase belum dapat dimuat. Periksa koneksi internet atau konfigurasi Supabase.');
  });
 }
 
-/* =========================
-   DASHBOARD DAN PROYEK
-   ========================= */
-function switchView(view) {
- const dashboard = view === 'dashboard';
- $('view-dashboard').classList.toggle('hidden', !dashboard);
- $('view-projects').classList.toggle('hidden', dashboard);
-
- $('nav-dashboard').className = 'px-3 py-2 rounded-lg text-xs font-semibold ' + (dashboard ? 'bg-cyan-500 text-white' : 'text-slate-300');
- $('nav-projects').className = 'px-3 py-2 rounded-lg text-xs font-semibold ' + (!dashboard ? 'bg-cyan-500 text-white' : 'text-slate-300');
-
- if (dashboard) renderDashboard();
+/* DASHBOARD DAN PROYEK */
+function switchView(view){
+ const dashboard=view==='dashboard';
+ $('view-dashboard').classList.toggle('hidden',!dashboard);
+ $('view-projects').classList.toggle('hidden',dashboard);
+ $('nav-dashboard').className='px-3 py-2 rounded-lg text-xs font-semibold '+(dashboard?'bg-cyan-500 text-white':'text-slate-300');
+ $('nav-projects').className='px-3 py-2 rounded-lg text-xs font-semibold '+(!dashboard?'bg-cyan-500 text-white':'text-slate-300');
+ if(dashboard)renderDashboard();
  else renderProjectsList();
 }
-
-function statusClass(status) {
- if (status === 'Completed') return 'bg-emerald-100 text-emerald-700';
- if (status === 'On Inspection') return 'bg-indigo-100 text-indigo-700';
- if (status === 'In Progress') return 'bg-amber-100 text-amber-700';
+function statusClass(status){
+ if(status==='Completed')return 'bg-emerald-100 text-emerald-700';
+ if(status==='On Inspection')return 'bg-indigo-100 text-indigo-700';
+ if(status==='In Progress')return 'bg-amber-100 text-amber-700';
  return 'bg-slate-100 text-slate-600';
 }
-
-function escapeHTML(value) {
- return String(value ?? '').replace(/[&<>"']/g, char => ({
-  '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
- })[char]);
+function escapeHTML(value){
+ return String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 }
-
-function renderDashboard() {
- $('stat-total').textContent = projects.length;
- $('stat-progress').textContent = projects.filter(p => p.status === 'In Progress').length;
- $('stat-inspection').textContent = projects.filter(p => p.status === 'On Inspection').length;
- $('stat-completed').textContent = projects.filter(p => p.status === 'Completed').length;
-
- const tbody = $('recentProjectsTable');
- tbody.innerHTML = '';
-
- projects.slice(-3).reverse().forEach(p => {
-  tbody.insertAdjacentHTML('beforeend', `
+function renderDashboard(){
+ $('stat-total').textContent=projects.length;
+ $('stat-progress').textContent=projects.filter(p=>p.status==='In Progress').length;
+ $('stat-inspection').textContent=projects.filter(p=>p.status==='On Inspection').length;
+ $('stat-completed').textContent=projects.filter(p=>p.status==='Completed').length;
+ const tbody=$('recentProjectsTable');
+ tbody.innerHTML='';
+ projects.slice(-3).reverse().forEach(p=>{
+  tbody.insertAdjacentHTML('beforeend',`
    <tr class="border-b hover:bg-slate-50">
     <td class="p-3 font-bold">${escapeHTML(p.unitName)}</td>
     <td class="p-3">${escapeHTML(p.unitType)}<br><span class="text-slate-400">${escapeHTML(p.unitNumber)}</span></td>
@@ -563,30 +482,23 @@ function renderDashboard() {
    </tr>`);
  });
 }
-
-function renderProjectsList(list = projects) {
- const container = $('projectListContainer');
- container.innerHTML = '';
-
- if (!list.length) {
-  container.innerHTML = '<div class="bg-white p-8 rounded-2xl text-center text-slate-400 text-xs">Tidak ada proyek ditemukan.</div>';
+function renderProjectsList(list=projects){
+ const container=$('projectListContainer');
+ container.innerHTML='';
+ if(!list.length){
+  container.innerHTML='<div class="bg-white p-8 rounded-2xl text-center text-slate-400 text-xs">Tidak ada proyek ditemukan.</div>';
   return;
  }
-
- list.forEach(p => {
-  const docs = [
-   ['Work Order',p.documents.wo],['Drawing',p.documents.drawing],
-   ['Hand Over Memo',p.documents.handover],['Bill of Material',p.documents.bom]
-  ];
-
-  container.insertAdjacentHTML('beforeend', `
+ list.forEach(p=>{
+  const docs=[['Work Order',p.documents.wo],['Drawing',p.documents.drawing],['Hand Over Memo',p.documents.handover],['Bill of Material',p.documents.bom]];
+  container.insertAdjacentHTML('beforeend',`
    <article class="bg-white rounded-2xl border shadow-sm p-5 space-y-4">
     <div class="flex flex-wrap items-start justify-between gap-3 border-b pb-4">
      <div><h3 class="font-black text-slate-900">${escapeHTML(p.unitName)}</h3>
       <p class="text-xs text-slate-500 mt-1">${escapeHTML(p.unitType)} · ${escapeHTML(p.unitNumber)}</p>
       <span class="inline-block mt-2 px-2 py-1 rounded-full text-xs ${statusClass(p.status)}">${escapeHTML(p.status)}</span>
      </div>
-     <button onclick="openTimeline('${p.id}')" class="bg-slate-900 text-white rounded-xl px-4 py-2 text-xs font-bold">Kelola Proses & Timeline</button>
+     <button onclick="openTimeline('${p.id}')" class="bg-slate-900 text-white rounded-xl px-4 py-2 text-xs font-bold">Kelola Proses &amp; Timeline</button>
     </div>
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
      ${docs.map(([label,name])=>`<div class="bg-slate-50 p-3 rounded-xl"><p class="text-[10px] text-slate-400 font-bold uppercase">${label}</p><p class="text-xs break-words mt-1">${escapeHTML(name)}</p></div>`).join('')}
@@ -594,33 +506,30 @@ function renderProjectsList(list = projects) {
    </article>`);
  });
 }
-
-function filterProjects() {
- const keyword = $('searchInput').value.toLowerCase().trim();
- const status = $('filterStatus').value;
-
- const filtered = projects.filter(p => {
-  const text = [p.unitName,p.unitType,p.unitNumber,p.documents.wo].join(' ').toLowerCase();
-  return text.includes(keyword) && (status === 'ALL' || p.status === status);
+function filterProjects(){
+ const keyword=$('searchInput').value.toLowerCase().trim();
+ const status=$('filterStatus').value;
+ const filtered=projects.filter(p=>{
+  const text=[p.unitName,p.unitType,p.unitNumber,p.documents.wo].join(' ').toLowerCase();
+  return text.includes(keyword)&&(status==='ALL'||p.status===status);
  });
  renderProjectsList(filtered);
 }
 
-$('addProjectForm').addEventListener('submit', function(event) {
+$('addProjectForm').addEventListener('submit',function(event){
  event.preventDefault();
-
- const id = 'PRJ-' + String(Date.now());
- const project = {
+ const id='PRJ-'+String(Date.now());
+ const project={
   id,
   unitName:$('newUnitName').value.trim(),
   unitType:$('newUnitType').value.trim(),
   unitNumber:$('newUnitNumber').value.trim(),
   status:'Not Started',
   documents:{
-   wo:$('docWO').value.trim() || 'WO-DRAFT.pdf',
-   drawing:$('docDrawing').value.trim() || 'DWG-DRAFT.pdf',
-   handover:$('docHandover').value.trim() || 'HOM-DRAFT.pdf',
-   bom:$('docBOM').value.trim() || 'BOM-DRAFT.pdf'
+   wo:$('docWO').value.trim()||'WO-DRAFT.pdf',
+   drawing:$('docDrawing').value.trim()||'DWG-DRAFT.pdf',
+   handover:$('docHandover').value.trim()||'HOM-DRAFT.pdf',
+   bom:$('docBOM').value.trim()||'BOM-DRAFT.pdf'
   },
   processes:{
    komponen:{status:'Pending',files:[]},
@@ -628,7 +537,6 @@ $('addProjectForm').addEventListener('submit', function(event) {
    painting:{status:'Pending',files:[]}
   }
  };
-
  projects.push(project);
  closeModal('addProjectModal');
  $('addProjectForm').reset();
@@ -637,23 +545,19 @@ $('addProjectForm').addEventListener('submit', function(event) {
  showToast('Proyek berhasil ditambahkan.');
 });
 
-function openTimeline(projectId) {
- const p = projects.find(item => item.id === projectId);
- if (!p) return;
-
- $('timelineUnitName').textContent = p.unitName;
- $('timelineUnitMeta').textContent = p.unitType + ' — ' + p.unitNumber;
-
- const container = $('timelineContainer');
- container.innerHTML = '';
-
- stages.forEach(stage => {
-  const data = p.processes[stage.key];
-  const files = data.files.length
-   ? data.files.map(file => `<li class="text-xs bg-slate-50 border rounded-lg p-2 break-words">${escapeHTML(file.name)} <span class="text-slate-400">(${escapeHTML(file.type)})</span></li>`).join('')
-   : '<li class="text-xs text-slate-400 italic">Belum ada lampiran.</li>';
-
-  container.insertAdjacentHTML('beforeend', `
+function openTimeline(projectId){
+ const p=projects.find(item=>item.id===projectId);
+ if(!p)return;
+ $('timelineUnitName').textContent=p.unitName;
+ $('timelineUnitMeta').textContent=p.unitType+' — '+p.unitNumber;
+ const container=$('timelineContainer');
+ container.innerHTML='';
+ stages.forEach(stage=>{
+  const data=p.processes[stage.key];
+  const files=data.files.length
+   ?data.files.map(file=>`<li class="text-xs bg-slate-50 border rounded-lg p-2 break-words">${escapeHTML(file.name)} <span class="text-slate-400">(${escapeHTML(file.type)})</span></li>`).join('')
+   :'<li class="text-xs text-slate-400 italic">Belum ada lampiran.</li>';
+  container.insertAdjacentHTML('beforeend',`
    <div class="border rounded-xl p-4 space-y-3">
     <div class="flex flex-wrap justify-between gap-2">
      <h4 class="font-bold text-sm">${stage.label}</h4>
@@ -663,43 +567,28 @@ function openTimeline(projectId) {
     <div class="text-right"><button onclick="openUploadModal('${p.id}','${stage.key}')" class="bg-cyan-50 text-cyan-700 px-3 py-2 rounded-lg text-xs font-bold">Tambah Lampiran / Update</button></div>
    </div>`);
  });
-
  openModal('detailTimelineModal');
 }
-
-function openUploadModal(projectId, stageKey) {
- $('uploadProjectId').value = projectId;
- $('uploadStageKey').value = stageKey;
- const stage = stages.find(s => s.key === stageKey);
- $('uploadModalTitle').textContent = 'Update: ' + (stage ? stage.label : 'Tahap');
+function openUploadModal(projectId,stageKey){
+ $('uploadProjectId').value=projectId;
+ $('uploadStageKey').value=stageKey;
+ const stage=stages.find(s=>s.key===stageKey);
+ $('uploadModalTitle').textContent='Update: '+(stage?stage.label:'Tahap');
  $('uploadStageForm').reset();
  openModal('uploadStageModal');
 }
-
-$('uploadStageForm').addEventListener('submit', function(event) {
+$('uploadStageForm').addEventListener('submit',function(event){
  event.preventDefault();
-
- const project = projects.find(p => p.id === $('uploadProjectId').value);
- const key = $('uploadStageKey').value;
- if (!project || !project.processes[key]) return;
-
- project.processes[key].status = $('stageStatusUpdate').value;
- project.processes[key].files.push({
-  name:$('attachmentName').value.trim(),
-  type:$('attachmentType').value
- });
-
- const statuses = stages.map(s => project.processes[s.key].status);
- if (statuses.every(status => status === 'Completed')) {
-  project.status = 'Completed';
- } else if (statuses.includes('On Inspection')) {
-  project.status = 'On Inspection';
- } else if (statuses.some(status => status === 'In Progress' || status === 'Completed')) {
-  project.status = 'In Progress';
- } else {
-  project.status = 'Not Started';
- }
-
+ const project=projects.find(p=>p.id===$('uploadProjectId').value);
+ const key=$('uploadStageKey').value;
+ if(!project||!project.processes[key])return;
+ project.processes[key].status=$('stageStatusUpdate').value;
+ project.processes[key].files.push({name:$('attachmentName').value.trim(),type:$('attachmentType').value});
+ const statuses=stages.map(s=>project.processes[s.key].status);
+ if(statuses.every(status=>status==='Completed'))project.status='Completed';
+ else if(statuses.includes('On Inspection'))project.status='On Inspection';
+ else if(statuses.some(status=>status==='In Progress'||status==='Completed'))project.status='In Progress';
+ else project.status='Not Started';
  closeModal('uploadStageModal');
  renderDashboard();
  renderProjectsList();
@@ -707,18 +596,14 @@ $('uploadStageForm').addEventListener('submit', function(event) {
  showToast('Tahap proses berhasil diperbarui.');
 });
 
-function openModal(id) {
- $(id).classList.remove('hidden');
-}
-function closeModal(id) {
- $(id).classList.add('hidden');
-}
-function showToast(message) {
- const toast = $('toast');
- $('toastMsg').textContent = message;
+function openModal(id){$(id).classList.remove('hidden');}
+function closeModal(id){$(id).classList.add('hidden');}
+function showToast(message){
+ const toast=$('toast');
+ $('toastMsg').textContent=message;
  toast.classList.remove('hidden');
  clearTimeout(toastTimer);
- toastTimer = setTimeout(() => toast.classList.add('hidden'), 3000);
+ toastTimer=setTimeout(()=>toast.classList.add('hidden'),3000);
 }
 </script>
 </body>
