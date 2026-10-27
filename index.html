@@ -1,972 +1,725 @@
+
 <!DOCTYPE html>
 <html lang="id" class="h-full bg-slate-100">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Management Process - PT. Sribaru Indah Sejahtera</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        brand: {
-                            50: '#f0f9ff',
-                            100: '#e0f2fe',
-                            500: '#06b6d4',
-                            600: '#0284c7',
-                            800: '#075985',
-                            900: '#0f172a',
-                            950: '#020617',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
-    <!-- Supabase client untuk login -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Inter', sans-serif; }
-        ::-webkit-scrollbar { width: 6px; height: 6px; }
-        ::-webkit-scrollbar-track { background: #f1f5f9; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Management Process - PT. Sribaru Indah Sejahtera</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+body{font-family:Inter,sans-serif}
+::-webkit-scrollbar{width:6px;height:6px}
+::-webkit-scrollbar-thumb{background:#cbd5e1;border-radius:4px}
+button:disabled{opacity:.6;cursor:wait}
+</style>
 </head>
-<body class="h-full text-slate-800 flex flex-col antialiased selection:bg-cyan-500 selection:text-white">
+<body class="min-h-screen text-slate-800 antialiased">
 
-<!-- LOGIN SUPABASE SCREEN (Diperbaiki dengan fixed inset-0 z-50 agar tidak terhalang) -->
+<!-- LOGIN -->
 <section id="loginScreen" class="min-h-screen flex items-center justify-center bg-slate-950 px-4 py-10 fixed inset-0 z-50">
-    <div class="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden">
-        <div class="bg-slate-900 px-7 py-6 text-white">
-            <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-xl mb-4">
-                <i class="fa-solid fa-industry"></i>
-            </div>
-            <h1 class="text-xl font-black tracking-tight">MANAGEMENT PROCESS</h1>
-            <p class="text-xs text-cyan-300 font-semibold mt-1">PT. Sribaru Indah Sejahtera</p>
-            <p class="text-sm text-slate-300 mt-4">Silakan masuk untuk membuka dashboard.</p>
-        </div>
+ <div class="w-full max-w-md bg-white rounded-2xl shadow-2xl overflow-hidden">
+  <div class="bg-slate-900 px-7 py-6 text-white">
+   <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-xl mb-4"><i class="fa-solid fa-industry"></i></div>
+   <h1 class="text-xl font-black">MANAGEMENT PROCESS</h1>
+   <p class="text-xs text-cyan-300 font-semibold mt-1">PT. Sribaru Indah Sejahtera</p>
+   <p id="loginSubtitle" class="text-sm text-slate-300 mt-4">Silakan masuk untuk membuka dashboard.</p>
+  </div>
 
-        <form id="loginForm" class="p-7 space-y-4">
-            <div>
-                <label for="loginEmail" class="block text-xs font-bold text-slate-700 mb-1.5">Email</label>
-                <input id="loginEmail" type="email" autocomplete="username" required
-                    class="w-full text-sm p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:outline-none"
-                    placeholder="nama@perusahaan.com">
-            </div>
+  <form id="loginForm" class="p-7 space-y-4">
+   <div>
+    <label for="loginEmail" class="block text-xs font-bold mb-1.5">Email</label>
+    <input id="loginEmail" type="email" autocomplete="username" required class="w-full text-sm p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:outline-none" placeholder="nama@perusahaan.com">
+   </div>
+   <div>
+    <label for="loginPassword" class="block text-xs font-bold mb-1.5">Password</label>
+    <input id="loginPassword" type="password" autocomplete="current-password" required class="w-full text-sm p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:outline-none" placeholder="Masukkan password">
+   </div>
+   <p id="loginMessage" role="status" aria-live="polite" class="hidden text-xs font-medium p-3 rounded-xl"></p>
+   <button id="loginSubmit" type="submit" class="w-full py-3 rounded-xl text-sm font-bold bg-cyan-600 text-white hover:bg-cyan-700">Masuk</button>
+   <div class="text-center pt-1">
+    <button id="forgotPasswordButton" type="button" class="text-sm font-semibold text-cyan-700 hover:text-cyan-900">Lupa Sandi?</button>
+   </div>
+   <p class="text-[11px] text-slate-400 text-center pt-2">Akun dibuat melalui Supabase Authentication oleh administrator.</p>
+  </form>
 
-            <div>
-                <label for="loginPassword" class="block text-xs font-bold text-slate-700 mb-1.5">Password</label>
-                <input id="loginPassword" type="password" autocomplete="current-password" required
-                    class="w-full text-sm p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:outline-none"
-                    placeholder="Masukkan password">
-            </div>
-
-            <p id="loginMessage" role="status" aria-live="polite" class="text-xs font-medium hidden p-3 rounded-xl"></p>
-
-            <button id="loginSubmit" type="submit"
-                class="w-full py-3 rounded-xl text-sm font-bold bg-cyan-600 text-white hover:bg-cyan-700 transition-all shadow-md">
-                Masuk
-            </button>
-
-            <div class="text-center pt-1">
-                <button id="forgotPasswordButton" type="button"
-                    class="text-sm font-semibold text-cyan-700 hover:text-cyan-900 transition-colors">
-                    Lupa Sandi?
-                </button>
-            </div>
-
-            <p class="text-[11px] text-slate-400 text-center pt-2">
-                Akun dibuat melalui Supabase Authentication oleh administrator.
-            </p>
-        </form>
-    </div>
+  <!-- FORM PASSWORD BARU -->
+  <form id="resetPasswordForm" class="p-7 space-y-4 hidden">
+   <h2 class="text-lg font-bold text-slate-900">Buat Password Baru</h2>
+   <p class="text-xs text-slate-500">Masukkan password baru untuk akun Anda.</p>
+   <div>
+    <label for="newPassword" class="block text-xs font-bold mb-1.5">Password Baru</label>
+    <input id="newPassword" type="password" minlength="8" autocomplete="new-password" required class="w-full text-sm p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:outline-none" placeholder="Minimal 8 karakter">
+   </div>
+   <div>
+    <label for="confirmPassword" class="block text-xs font-bold mb-1.5">Konfirmasi Password Baru</label>
+    <input id="confirmPassword" type="password" minlength="8" autocomplete="new-password" required class="w-full text-sm p-3 border border-slate-200 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:outline-none" placeholder="Ulangi password baru">
+   </div>
+   <p id="resetMessage" role="status" aria-live="polite" class="hidden text-xs font-medium p-3 rounded-xl"></p>
+   <button id="resetSubmit" type="submit" class="w-full py-3 rounded-xl text-sm font-bold bg-cyan-600 text-white hover:bg-cyan-700">Simpan Password Baru</button>
+   <button id="backToLoginButton" type="button" class="w-full py-2 text-sm font-semibold text-slate-600 hover:text-cyan-700">Kembali ke Login</button>
+  </form>
+ </div>
 </section>
 
-<!-- MAIN APP CONTAINER (Tersembunyi Sebelum Login) -->
-<div id="sisApp" class="hidden flex-1 flex flex-col h-full">
-    <div class="bg-cyan-50 border-b border-cyan-100 px-4 py-2 flex flex-wrap items-center justify-end gap-3 text-xs">
-        <span id="sisUserEmail" class="font-semibold text-slate-600"></span>
-        <button id="logoutButton" type="button" onclick="logoutSIS()"
-            class="rounded-lg bg-slate-900 px-3 py-2 font-bold text-white hover:bg-slate-700">
-            Keluar <i class="fa-solid fa-right-from-bracket ml-1"></i>
-        </button>
+<!-- APLIKASI -->
+<div id="sisApp" class="hidden min-h-screen flex-col">
+ <div class="bg-cyan-50 border-b border-cyan-100 px-4 py-2 flex items-center justify-end gap-3 text-xs">
+  <span id="sisUserEmail" class="font-semibold text-slate-600"></span>
+  <button id="logoutButton" type="button" class="rounded-lg bg-slate-900 px-3 py-2 font-bold text-white hover:bg-slate-700">Keluar <i class="fa-solid fa-right-from-bracket ml-1"></i></button>
+ </div>
+
+ <header class="bg-slate-900 text-white sticky top-0 z-30 shadow-md">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex flex-wrap items-center justify-between gap-3">
+   <div class="flex items-center gap-3 cursor-pointer" onclick="switchView('dashboard')">
+    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center text-xl"><i class="fa-solid fa-industry"></i></div>
+    <div><h1 class="font-extrabold text-sm">MANAGEMENT PROCESS</h1><p class="text-[11px] text-cyan-400">PT. Sribaru Indah Sejahtera</p></div>
+   </div>
+   <nav class="flex gap-2">
+    <button id="nav-dashboard" onclick="switchView('dashboard')" class="px-3 py-2 rounded-lg text-xs font-semibold bg-cyan-500">Dashboard</button>
+    <button id="nav-projects" onclick="switchView('projects')" class="px-3 py-2 rounded-lg text-xs font-semibold text-slate-300">Daftar Proyek</button>
+   </nav>
+   <button onclick="openModal('addProjectModal')" class="bg-cyan-600 hover:bg-cyan-500 px-4 py-2.5 rounded-xl text-xs font-bold"><i class="fa-solid fa-plus mr-1"></i> Tambah Proyek</button>
+  </div>
+ </header>
+
+ <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 space-y-6">
+  <section id="view-dashboard" class="space-y-6">
+   <div class="bg-gradient-to-r from-slate-900 via-slate-800 to-cyan-950 rounded-2xl p-6 sm:p-8 text-white shadow-xl">
+    <span class="text-xs font-bold text-cyan-300">SYSTEM CONTROL CENTER</span>
+    <h2 class="text-2xl font-black mt-3">Manajemen Alur Kerja &amp; Kontrol Dokumen Unit</h2>
+    <p class="text-sm text-slate-300 mt-2">Pantau tahapan Komponen, Fabrikasi, Painting, dan dokumen acuan unit.</p>
+    <button onclick="switchView('projects')" class="mt-4 bg-cyan-500 text-slate-950 px-4 py-2 rounded-xl text-xs font-bold">Kelola Daftar Proyek →</button>
+   </div>
+   <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="bg-white p-5 rounded-2xl border shadow-sm"><p class="text-xs text-slate-500">Total Proyek Unit</p><h3 id="stat-total" class="text-2xl font-black mt-1">0</h3></div>
+    <div class="bg-white p-5 rounded-2xl border shadow-sm"><p class="text-xs text-slate-500">Dalam Proses</p><h3 id="stat-progress" class="text-2xl font-black text-amber-600 mt-1">0</h3></div>
+    <div class="bg-white p-5 rounded-2xl border shadow-sm"><p class="text-xs text-slate-500">Dalam Inspeksi QC</p><h3 id="stat-inspection" class="text-2xl font-black text-indigo-600 mt-1">0</h3></div>
+    <div class="bg-white p-5 rounded-2xl border shadow-sm"><p class="text-xs text-slate-500">Selesai</p><h3 id="stat-completed" class="text-2xl font-black text-emerald-600 mt-1">0</h3></div>
+   </div>
+   <div class="bg-white rounded-2xl border shadow-sm p-5">
+    <h3 class="text-sm font-bold mb-4">Proyek Terbaru Ditambahkan</h3>
+    <div class="overflow-x-auto">
+     <table class="w-full text-left text-xs">
+      <thead><tr class="border-b bg-slate-50 text-slate-500"><th class="p-3">Nama Unit</th><th class="p-3">Tipe / Nomor Unit</th><th class="p-3">WO</th><th class="p-3">Status</th><th class="p-3">Aksi</th></tr></thead>
+      <tbody id="recentProjectsTable"></tbody>
+     </table>
     </div>
+   </div>
+  </section>
 
-    <!-- TOP NAVIGATION HEADER -->
-    <header class="bg-slate-900 text-white border-b border-slate-800 sticky top-0 z-30 shadow-md">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex items-center justify-between h-16">
-                <!-- Logo & Company Name -->
-                <div class="flex items-center space-x-3 cursor-pointer" onclick="switchView('dashboard')">
-                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-cyan-500 to-blue-600 flex items-center justify-center font-black text-white text-xl shadow-lg shadow-cyan-500/30">
-                        <i class="fa-solid fa-industry"></i>
-                    </div>
-                    <div>
-                        <h1 class="font-extrabold text-base tracking-tight leading-none text-white">MANAGEMENT PROCESS</h1>
-                        <p class="text-[11px] text-cyan-400 font-semibold tracking-wider uppercase mt-0.5">PT. Sribaru Indah Sejahtera</p>
-                    </div>
-                </div>
-
-                <!-- Navigation Tabs -->
-                <nav class="hidden md:flex space-x-1 bg-slate-800/80 p-1 rounded-xl border border-slate-700/50">
-                    <button id="nav-dashboard" onclick="switchView('dashboard')"
-                        class="px-4 py-2 rounded-lg text-xs font-semibold transition-all bg-cyan-500 text-white shadow-sm">
-                        <i class="fa-solid fa-chart-pie me-1.5"></i> Dashboard
-                    </button>
-                    <button id="nav-projects" onclick="switchView('projects')"
-                        class="px-4 py-2 rounded-lg text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-700 transition-all">
-                        <i class="fa-solid fa-layer-group me-1.5"></i> Daftar Proyek
-                    </button>
-                </nav>
-
-                <!-- Action Button -->
-                <div class="flex items-center space-x-3">
-                    <button onclick="openModal('addProjectModal')"
-                        class="bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-lg shadow-cyan-500/20 flex items-center space-x-2 transition-all transform active:scale-95">
-                        <i class="fa-solid fa-plus"></i>
-                        <span class="hidden sm:inline">Tambah Proyek</span>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </header>
-
-    <!-- MOBILE NAVIGATION BAR -->
-    <div class="md:hidden bg-slate-800 border-b border-slate-700 px-4 py-2 flex justify-around">
-        <button id="mobile-nav-dashboard" onclick="switchView('dashboard')" class="text-xs font-semibold text-cyan-400 py-1">
-            <i class="fa-solid fa-chart-pie me-1"></i> Dashboard
-        </button>
-        <button id="mobile-nav-projects" onclick="switchView('projects')" class="text-xs font-semibold text-slate-400 py-1">
-            <i class="fa-solid fa-layer-group me-1"></i> Daftar Proyek
-        </button>
-    </div>
-
-    <!-- MAIN BODY CONTAINER -->
-    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
-
-        <!-- DASHBOARD VIEW -->
-        <section id="view-dashboard" class="space-y-6">
-            <!-- Welcome Banner -->
-            <div class="relative bg-gradient-to-r from-slate-900 via-slate-800 to-cyan-950 rounded-2xl p-6 sm:p-8 text-white overflow-hidden shadow-xl border border-slate-800">
-                <div class="relative z-10 max-w-2xl space-y-3">
-                    <span class="inline-flex items-center space-x-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
-                        <i class="fa-solid fa-shield-halved"></i>
-                        <span>System Control Center</span>
-                    </span>
-                    <h2 class="text-2xl sm:text-3xl font-black tracking-tight">Manajemen Alur Kerja &amp; Kontrol Dokumen Unit</h2>
-                    <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                        Pantau status pengerjaan unit manufaktur secara terintegrasi melalui 3 tahap utama (Komponen, Fabrikasi, Painting) beserta kelengkapan file acuan (WO, Drawing, Hand Over Memo, BOM).
-                    </p>
-                    <div class="pt-2 flex flex-wrap gap-3">
-                        <button onclick="switchView('projects')" class="bg-cyan-500 hover:bg-cyan-400 text-slate-950 px-4 py-2 rounded-xl text-xs font-bold transition-all shadow-md flex items-center space-x-2">
-                            <span>Kelola Daftar Proyek</span>
-                            <i class="fa-solid fa-arrow-right"></i>
-                        </button>
-                    </div>
-                </div>
-                <i class="fa-solid fa-cubes-stacked absolute -right-6 -bottom-6 text-slate-800/40 text-9xl pointer-events-none"></i>
-            </div>
-
-            <!-- Dashboard Metric Cards -->
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
-                    <div>
-                        <p class="text-xs font-medium text-slate-500">Total Proyek Unit</p>
-                        <h3 id="stat-total" class="text-2xl font-black text-slate-900 mt-1">0</h3>
-                    </div>
-                    <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl">
-                        <i class="fa-solid fa-boxes-packing"></i>
-                    </div>
-                </div>
-
-                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
-                    <div>
-                        <p class="text-xs font-medium text-slate-500">Dalam Proses (In Progress)</p>
-                        <h3 id="stat-progress" class="text-2xl font-black text-amber-600 mt-1">0</h3>
-                    </div>
-                    <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl">
-                        <i class="fa-solid fa-gears fa-spin"></i>
-                    </div>
-                </div>
-
-                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
-                    <div>
-                        <p class="text-xs font-medium text-slate-500">Dalam Inspeksi QC</p>
-                        <h3 id="stat-inspection" class="text-2xl font-black text-indigo-600 mt-1">0</h3>
-                    </div>
-                    <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl">
-                        <i class="fa-solid fa-magnifying-glass-chart"></i>
-                    </div>
-                </div>
-
-                <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
-                    <div>
-                        <p class="text-xs font-medium text-slate-500">Selesai (Completed)</p>
-                        <h3 id="stat-completed" class="text-2xl font-black text-emerald-600 mt-1">0</h3>
-                    </div>
-                    <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl">
-                        <i class="fa-solid fa-circle-check"></i>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Quick Recent Projects Table Overview -->
-            <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-5 space-y-4">
-                <div class="flex items-center justify-between">
-                    <h3 class="text-sm font-bold text-slate-900 flex items-center space-x-2">
-                        <i class="fa-solid fa-clock-rotate-left text-cyan-600"></i>
-                        <span>Proyek Terbaru Ditambahkan</span>
-                    </h3>
-                    <button onclick="switchView('projects')" class="text-xs text-cyan-600 hover:text-cyan-700 font-semibold">Lihat Semua →</button>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse">
-                        <thead>
-                            <tr class="border-b border-slate-200 text-[11px] font-bold text-slate-400 uppercase tracking-wider bg-slate-50/50">
-                                <th class="py-2.5 px-3">Nama Unit</th>
-                                <th class="py-2.5 px-3">Tipe - No. Unit</th>
-                                <th class="py-2.5 px-3">WO Doc</th>
-                                <th class="py-2.5 px-3">Status Akhir</th>
-                                <th class="py-2.5 px-3 text-right">Aksi</th>
-                            </tr>
-                        </thead>
-                        <tbody id="recentProjectsTable" class="divide-y divide-slate-100 text-xs"></tbody>
-                    </table>
-                </div>
-            </div>
-        </section>
-
-        <!-- PROJECTS LIST VIEW -->
-        <section id="view-projects" class="space-y-6 hidden">
-            <!-- Control Bar: Search & Status Filter -->
-            <div class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div class="relative flex-1">
-                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
-                    <input type="text" id="searchInput" onkeyup="filterProjects()" placeholder="Cari Nama Unit, Type Unit, No. Unit, atau WO..."
-                        class="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:bg-white transition-all">
-                </div>
-
-                <div class="flex flex-wrap items-center gap-3">
-                    <div class="flex items-center space-x-2">
-                        <label class="text-xs font-semibold text-slate-500">Filter Status:</label>
-                        <select id="filterStatus" onchange="filterProjects()" class="text-xs bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-cyan-500">
-                            <option value="ALL">Semua Status</option>
-                            <option value="Not Started">Not Started</option>
-                            <option value="In Progress">In Progress</option>
-                            <option value="On Inspection">On Inspection</option>
-                            <option value="Completed">Completed</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-
-            <!-- PROJECTS CARDS CONTAINER -->
-            <div id="projectListContainer" class="space-y-6"></div>
-        </section>
-    </main>
-
-    <!-- MODAL 1: TAMBAH PROYEK BARU -->
-    <div id="addProjectModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
-        <div class="bg-white rounded-2xl max-w-xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-100">
-            <div class="p-5 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white z-10">
-                <div class="flex items-center space-x-2">
-                    <i class="fa-solid fa-square-plus text-cyan-600 text-lg"></i>
-                    <h3 class="font-bold text-slate-900 text-base">Tambah Unit Proyek Baru</h3>
-                </div>
-                <button onclick="closeModal('addProjectModal')" class="text-slate-400 hover:text-slate-600 p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-
-            <form id="addProjectForm" onsubmit="handleAddProject(event)" class="p-6 space-y-4">
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">Nama Unit Proyek *</label>
-                    <input type="text" required id="newUnitName" placeholder="Contoh: Overhead Crane 10Ton Line A" class="w-full text-xs p-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:outline-none">
-                </div>
-
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">Type Unit *</label>
-                        <input type="text" required id="newUnitType" placeholder="Contoh: Heavy Machine Model X" class="w-full text-xs p-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:outline-none">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 mb-1">Nomor Unit / Serial *</label>
-                        <input type="text" required id="newUnitNumber" placeholder="Contoh: SIS-2026-UN09" class="w-full text-xs p-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:outline-none">
-                    </div>
-                </div>
-
-                <div class="border-t border-slate-100 pt-4 space-y-3">
-                    <h4 class="text-xs font-bold text-slate-800 flex items-center space-x-2">
-                        <i class="fa-solid fa-folder-open text-cyan-600"></i>
-                        <span>Lampiran Dokumen Acuan Utama (Nama Berkas)</span>
-                    </h4>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                            <label class="block text-[11px] text-slate-600 mb-1">Nomor WO (Work Order)</label>
-                            <input type="text" id="docWO" placeholder="WO-99812-SIS.pdf" class="w-full text-xs p-2 border border-slate-200 rounded-lg">
-                        </div>
-                        <div>
-                            <label class="block text-[11px] text-slate-600 mb-1">Drawing Document</label>
-                            <input type="text" id="docDrawing" placeholder="DWG-UNIT-REV2.pdf" class="w-full text-xs p-2 border border-slate-200 rounded-lg">
-                        </div>
-                        <div>
-                            <label class="block text-[11px] text-slate-600 mb-1">Hand Over Memo</label>
-                            <input type="text" id="docHandover" placeholder="HOM-2026-001.pdf" class="w-full text-xs p-2 border border-slate-200 rounded-lg">
-                        </div>
-                        <div>
-                            <label class="block text-[11px] text-slate-600 mb-1">Bill of Material (BOM)</label>
-                            <input type="text" id="docBOM" placeholder="BOM-MATERIAL-LIST.pdf" class="w-full text-xs p-2 border border-slate-200 rounded-lg">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="pt-4 border-t border-slate-100 flex justify-end space-x-3">
-                    <button type="button" onclick="closeModal('addProjectModal')" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100">Batal</button>
-                    <button type="submit" class="px-5 py-2.5 rounded-xl text-xs font-bold bg-cyan-600 text-white hover:bg-cyan-700 shadow-md">Simpan Proyek</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL 2: UPLOAD BUKTI TAHAPAN PROSES -->
-    <div id="uploadStageModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
-        <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl border border-slate-100">
-            <div class="p-5 border-b border-slate-100 flex items-center justify-between">
-                <div class="flex items-center space-x-2">
-                    <i class="fa-solid fa-cloud-arrow-up text-cyan-600 text-lg"></i>
-                    <h3 id="uploadModalTitle" class="font-bold text-slate-900 text-sm">Upload Lampiran Tahap</h3>
-                </div>
-                <button onclick="closeModal('uploadStageModal')" class="text-slate-400 hover:text-slate-600 p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-
-            <form id="uploadStageForm" onsubmit="handleStageUpload(event)" class="p-6 space-y-4">
-                <input type="hidden" id="uploadProjectId">
-                <input type="hidden" id="uploadStageKey">
-
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">Nama Foto / Dokumen Lampiran *</label>
-                    <input type="text" required id="attachmentName" placeholder="Contoh: Foto Inspeksi Cat / Sertifikat Material" class="w-full text-xs p-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:outline-none">
-                </div>
-
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">Tipe File *</label>
-                    <select id="attachmentType" class="w-full text-xs p-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:outline-none font-medium">
-                        <option value="Dokumen PDF">Dokumen PDF (.pdf)</option>
-                        <option value="Foto Bukti">Foto Bukti Fisik (.jpg / .png)</option>
-                        <option value="Laporan QC">Laporan Pengujian QC (.pdf)</option>
-                    </select>
-                </div>
-
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 mb-1">Update Status Tahap Ini</label>
-                    <select id="stageStatusUpdate" class="w-full text-xs p-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-cyan-500 focus:outline-none font-medium">
-                        <option value="Completed">Selesai (Completed)</option>
-                        <option value="In Progress">Dalam Proses (In Progress)</option>
-                        <option value="Pending">Pending / Menunggu</option>
-                    </select>
-                </div>
-
-                <div class="pt-3 flex justify-end space-x-2">
-                    <button type="button" onclick="closeModal('uploadStageModal')" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100">Batal</button>
-                    <button type="submit" class="px-5 py-2 rounded-xl text-xs font-bold bg-cyan-600 text-white hover:bg-cyan-700 shadow-md">Simpan Lampiran</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL 3: DRAWER TIMELINE PROCESS DETAILED VIEW -->
-    <div id="detailTimelineModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
-        <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-100">
-            <div class="p-5 border-b border-slate-100 flex items-center justify-between sticky top-0 bg-white z-10">
-                <div>
-                    <h3 id="timelineUnitName" class="font-extrabold text-slate-900 text-base">Detail Timeline Unit</h3>
-                    <p id="timelineUnitMeta" class="text-xs text-slate-500">PT. Sribaru Indah Sejahtera Process Tracker</p>
-                </div>
-                <button onclick="closeModal('detailTimelineModal')" class="text-slate-400 hover:text-slate-600 p-1"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-
-            <div class="p-6 space-y-6">
-                <div id="timelineContainer" class="space-y-6 relative before:absolute before:inset-0 before:left-3.5 before:w-0.5 before:bg-slate-200"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL 4: DOCUMENT PREVIEW SIMULATOR -->
-    <div id="previewModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
-        <div class="bg-white rounded-2xl max-w-md w-full p-6 text-center space-y-4 shadow-2xl">
-            <div class="w-16 h-16 bg-cyan-50 text-cyan-600 rounded-2xl flex items-center justify-center mx-auto text-2xl shadow-inner">
-                <i class="fa-solid fa-file-pdf"></i>
-            </div>
-            <div>
-                <h3 id="previewDocName" class="text-base font-bold text-slate-900">Nama Dokumen</h3>
-                <p class="text-xs text-slate-500 mt-0.5">Sistem Arsip Digital PT. Sribaru Indah Sejahtera</p>
-            </div>
-            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 text-left text-xs font-mono text-slate-600 space-y-1">
-                <p><strong>File ID:</strong> SIS-DOC-2026-X89</p>
-                <p><strong>Status softcopy:</strong> Ready / Verified</p>
-            </div>
-            <div class="flex justify-center space-x-3 pt-2">
-                <button onclick="closeModal('previewModal')" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl text-xs font-semibold hover:bg-slate-200">Tutup</button>
-                <button onclick="showToast('Mengunduh dokumen...')" class="px-5 py-2 bg-cyan-600 text-white rounded-xl text-xs font-bold hover:bg-cyan-700 shadow-md">
-                    <i class="fa-solid fa-download me-1"></i> Unduh File
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- NOTIFICATION TOAST -->
-    <div id="toast" class="fixed bottom-5 right-5 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl text-xs font-semibold flex items-center space-x-3 transition-all duration-300 transform translate-y-20 opacity-0 z-50">
-        <i class="fa-solid fa-circle-check text-cyan-400 text-base"></i>
-        <span id="toastMsg">Pesan Notifikasi</span>
-    </div>
+  <section id="view-projects" class="hidden space-y-5">
+   <div class="bg-white p-4 rounded-2xl border flex flex-col sm:flex-row gap-3">
+    <input id="searchInput" type="search" oninput="filterProjects()" placeholder="Cari nama, tipe, nomor unit, atau WO..." class="flex-1 p-3 border rounded-xl text-xs">
+    <select id="filterStatus" onchange="filterProjects()" class="p-3 border rounded-xl text-xs">
+     <option value="ALL">Semua Status</option><option>Not Started</option><option>In Progress</option><option>On Inspection</option><option>Completed</option>
+    </select>
+   </div>
+   <div id="projectListContainer" class="space-y-4"></div>
+  </section>
+ </main>
 </div>
 
-<!-- APP JAVASCRIPT LOGIC -->
+<!-- MODAL TAMBAH PROYEK -->
+<div id="addProjectModal" class="hidden fixed inset-0 z-40 bg-slate-900/60 flex items-center justify-center p-4">
+ <div class="bg-white rounded-2xl max-w-xl w-full max-h-[90vh] overflow-y-auto p-6">
+  <div class="flex justify-between items-center mb-5"><h3 class="font-bold">Tambah Unit Proyek Baru</h3><button onclick="closeModal('addProjectModal')">✕</button></div>
+  <form id="addProjectForm" class="space-y-4">
+   <div><label class="block text-xs font-bold mb-1">Nama Unit *</label><input id="newUnitName" required class="w-full p-3 border rounded-xl text-xs" placeholder="Nama unit proyek"></div>
+   <div class="grid sm:grid-cols-2 gap-3">
+    <div><label class="block text-xs font-bold mb-1">Tipe Unit *</label><input id="newUnitType" required class="w-full p-3 border rounded-xl text-xs"></div>
+    <div><label class="block text-xs font-bold mb-1">Nomor Unit *</label><input id="newUnitNumber" required class="w-full p-3 border rounded-xl text-xs"></div>
+   </div>
+   <div class="border-t pt-4"><h4 class="text-xs font-bold mb-3">Dokumen Acuan</h4>
+    <div class="grid sm:grid-cols-2 gap-3">
+     <input id="docWO" placeholder="Nomor WO" class="p-3 border rounded-xl text-xs">
+     <input id="docDrawing" placeholder="Drawing Document" class="p-3 border rounded-xl text-xs">
+     <input id="docHandover" placeholder="Hand Over Memo" class="p-3 border rounded-xl text-xs">
+     <input id="docBOM" placeholder="Bill of Material" class="p-3 border rounded-xl text-xs">
+    </div>
+   </div>
+   <div class="flex justify-end gap-2"><button type="button" onclick="closeModal('addProjectModal')" class="px-4 py-2 text-xs">Batal</button><button type="submit" class="bg-cyan-600 text-white px-4 py-2 rounded-xl text-xs font-bold">Simpan Proyek</button></div>
+  </form>
+ </div>
+</div>
+
+<!-- MODAL TIMELINE -->
+<div id="detailTimelineModal" class="hidden fixed inset-0 z-40 bg-slate-900/60 flex items-center justify-center p-4">
+ <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6">
+  <div class="flex justify-between mb-5"><div><h3 id="timelineUnitName" class="font-bold"></h3><p id="timelineUnitMeta" class="text-xs text-slate-500"></p></div><button onclick="closeModal('detailTimelineModal')">✕</button></div>
+  <div id="timelineContainer" class="space-y-4"></div>
+ </div>
+</div>
+
+<!-- MODAL UPDATE TAHAP -->
+<div id="uploadStageModal" class="hidden fixed inset-0 z-40 bg-slate-900/60 flex items-center justify-center p-4">
+ <div class="bg-white rounded-2xl max-w-md w-full p-6">
+  <div class="flex justify-between mb-5"><h3 id="uploadModalTitle" class="font-bold text-sm">Update Tahap</h3><button onclick="closeModal('uploadStageModal')">✕</button></div>
+  <form id="uploadStageForm" class="space-y-4">
+   <input id="uploadProjectId" type="hidden"><input id="uploadStageKey" type="hidden">
+   <div><label class="block text-xs font-bold mb-1">Nama Foto / Dokumen</label><input id="attachmentName" required class="w-full p-3 border rounded-xl text-xs" placeholder="Nama lampiran"></div>
+   <div><label class="block text-xs font-bold mb-1">Tipe File</label><select id="attachmentType" class="w-full p-3 border rounded-xl text-xs"><option>Dokumen PDF</option><option>Foto Bukti</option><option>Laporan QC</option></select></div>
+   <div><label class="block text-xs font-bold mb-1">Status Tahap</label><select id="stageStatusUpdate" class="w-full p-3 border rounded-xl text-xs"><option>Completed</option><option>In Progress</option><option>Pending</option><option>On Inspection</option></select></div>
+   <div class="flex justify-end gap-2"><button type="button" onclick="closeModal('uploadStageModal')" class="text-xs px-3">Batal</button><button type="submit" class="bg-cyan-600 text-white px-4 py-2 rounded-xl text-xs font-bold">Simpan</button></div>
+  </form>
+ </div>
+</div>
+
+<div id="toast" class="fixed bottom-5 right-5 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-xl text-xs hidden z-[60]"><span id="toastMsg"></span></div>
+
 <script>
-    // ==========================================
-    // 1. INISIALISASI SUPABASE
-    // ==========================================
-    const SUPABASE_URL = 'https://maveqvmzydqvroohepum.supabase.co'; 
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1hdmVxdm16eWRxdnJvb2hlcHVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMwMjc2MTcsImV4cCI6MjEwODYwMzYxN30.0iJjNR55IdQJ0ewUQnf-ZmbY7bvFJdq241g-cF_Y_LE';
-    
-    let supabase = null;
-    try {
-        if (window.supabase && typeof window.supabase.createClient === 'function') {
-            supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        }
-    } catch (err) {
-        console.error('Gagal inisialisasi Supabase:', err);
-    }
-
-    // Initial Dataset
-    let projects = [
-        {
-            id: "PRJ-001",
-            unitName: "Hoist Crane Structure 10 Ton",
-            unitType: "Heavy Equipment",
-            unitNumber: "CRN-2026-A01",
-            status: "In Progress",
-            documents: {
-                wo: "WO-2026-CRN01.pdf",
-                drawing: "DWG-CRN10T-REV2.pdf",
-                handover: "HOM-CRN-01.pdf",
-                bom: "BOM-CRN-10T.pdf"
-            },
-            processes: {
-                komponen: {
-                    status: "Completed",
-                    files: [
-                        { name: "Sertifikat Steel Plate SS400.pdf", type: "Dokumen PDF" },
-                        { name: "Foto Material Utama Frame.jpg", type: "Foto Bukti" }
-                    ]
-                },
-                fabrikasi: {
-                    status: "In Progress",
-                    files: [
-                        { name: "Laporan Pengelasan Structure.pdf", type: "Laporan QC" },
-                        { name: "Foto Perakitan Main Girder.jpg", type: "Foto Bukti" }
-                    ]
-                },
-                painting: {
-                    status: "Pending",
-                    files: []
-                }
-            }
-        },
-        {
-            id: "PRJ-002",
-            unitName: "Conveyor Belt System Line B",
-            unitType: "Custom Conveyor Unit",
-            unitNumber: "CNV-2026-B05",
-            status: "Completed",
-            documents: {
-                wo: "WO-2026-CNV05.pdf",
-                drawing: "DWG-CNV-LINEB.pdf",
-                handover: "HOM-CNV-FINAL.pdf",
-                bom: "BOM-CNV-FULL.pdf"
-            },
-            processes: {
-                komponen: {
-                    status: "Completed",
-                    files: [{ name: "Checklist Roller & Motor.pdf", type: "Dokumen PDF" }]
-                },
-                fabrikasi: {
-                    status: "Completed",
-                    files: [{ name: "Foto Fabrikasi Frame.jpg", type: "Foto Bukti" }]
-                },
-                painting: {
-                    status: "Completed",
-                    files: [
-                        { name: "Foto Finishing Epoxy.jpg", type: "Foto Bukti" },
-                        { name: "Laporan Ketebalan Cat (QC).pdf", type: "Laporan QC" }
-                    ]
-                }
-            }
-        }
-    ];
-
-    // Init App & Auth State Check
-    window.onload = async function() {
-        if (supabase) {
-            try {
-                const { data: { session } } = await supabase.auth.getSession();
-                if (session) {
-                    appLoginSuccess(session.user.email);
-                }
-            } catch (e) {
-                console.error('Session check error:', e);
-            }
-        }
-
-        renderDashboard();
-        renderProjectsList();
-    };
-
-    // ==========================================
-    // 2. SUPABASE AUTH HANDLERS (Login & Lupa Sandi)
-    // ==========================================
-    const loginForm = document.getElementById('loginForm');
-    if (loginForm) {
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const emailInput = document.getElementById('loginEmail');
-            const passwordInput = document.getElementById('loginPassword');
-            const msgEl = document.getElementById('loginMessage');
-            const submitBtn = document.getElementById('loginSubmit');
-
-            if (!msgEl || !emailInput || !passwordInput) return;
-
-            msgEl.classList.add('hidden');
-            msgEl.className = 'text-xs font-medium hidden p-3 rounded-xl';
-            
-            if (!supabase) {
-                msgEl.textContent = 'Koneksi Supabase belum terinisialisasi dengan benar.';
-                msgEl.classList.remove('hidden');
-                msgEl.classList.add('bg-rose-50', 'text-rose-600', 'border', 'border-rose-200');
-                return;
-            }
-
-            submitBtn.textContent = 'Memproses...';
-            submitBtn.disabled = true;
-
-            try {
-                const { data, error } = await supabase.auth.signInWithPassword({
-                    email: emailInput.value.trim(),
-                    password: passwordInput.value
-                });
-
-                if (error) {
-                    msgEl.textContent = error.message;
-                    msgEl.classList.remove('hidden');
-                    msgEl.classList.add('bg-rose-50', 'text-rose-600', 'border', 'border-rose-200');
-                } else if (data && data.user) {
-                    appLoginSuccess(data.user.email);
-                }
-            } catch (err) {
-                msgEl.textContent = 'Terjadi kesalahan sistem: ' + err.message;
-                msgEl.classList.remove('hidden');
-                msgEl.classList.add('bg-rose-50', 'text-rose-600', 'border', 'border-rose-200');
-            } finally {
-                submitBtn.textContent = 'Masuk';
-                submitBtn.disabled = false;
-            }
-        });
-    }
-
-    const forgotPasswordBtn = document.getElementById('forgotPasswordButton');
-    if (forgotPasswordBtn) {
-        forgotPasswordBtn.addEventListener('click', async () => {
-            const emailInput = document.getElementById('loginEmail');
-            const msgEl = document.getElementById('loginMessage');
-
-            if (!msgEl || !emailInput) return;
-
-            msgEl.classList.add('hidden');
-            msgEl.className = 'text-xs font-medium hidden p-3 rounded-xl';
-
-            if (!emailInput.value.trim()) {
-                msgEl.textContent = 'Masukkan email Anda terlebih dahulu pada kolom Email di atas untuk reset password.';
-                msgEl.classList.remove('hidden');
-                msgEl.classList.add('bg-rose-50', 'text-rose-600', 'border', 'border-rose-200');
-                return;
-            }
-
-            if (!supabase) {
-                msgEl.textContent = 'Koneksi Supabase belum terinisialisasi dengan benar.';
-                msgEl.classList.remove('hidden');
-                msgEl.classList.add('bg-rose-50', 'text-rose-600', 'border', 'border-rose-200');
-                return;
-            }
-
-            try {
-                const { error } = await supabase.auth.resetPasswordForEmail(emailInput.value.trim(), {
-                    redirectTo: window.location.href,
-                });
-
-                if (error) {
-                    msgEl.textContent = error.message;
-                    msgEl.classList.remove('hidden');
-                    msgEl.classList.add('bg-rose-50', 'text-rose-600', 'border', 'border-rose-200');
-                } else {
-                    msgEl.textContent = 'Tautan pemulihan kata sandi telah dikirim ke email Anda.';
-                    msgEl.classList.remove('hidden');
-                    msgEl.classList.add('bg-emerald-50', 'text-emerald-700', 'border', 'border-emerald-200');
-                }
-            } catch (err) {
-                msgEl.textContent = 'Gagal mengirim email reset: ' + err.message;
-                msgEl.classList.remove('hidden');
-                msgEl.classList.add('bg-rose-50', 'text-rose-600', 'border', 'border-rose-200');
-            }
-        });
-    }
-
-    function appLoginSuccess(email) {
-        const loginScreen = document.getElementById('loginScreen');
-        const sisApp = document.getElementById('sisApp');
-        const sisUserEmail = document.getElementById('sisUserEmail');
-
-        if (loginScreen) loginScreen.classList.add('hidden');
-        if (sisApp) sisApp.classList.remove('hidden');
-        if (sisUserEmail) sisUserEmail.textContent = email;
-        showToast('Berhasil masuk ke sistem.');
-    }
-
-    async function logoutSIS() {
-        if (supabase) {
-            await supabase.auth.signOut();
-        }
-        const loginScreen = document.getElementById('loginScreen');
-        const sisApp = document.getElementById('sisApp');
-        const loginPassword = document.getElementById('loginPassword');
-        const loginMsg = document.getElementById('loginMessage');
-
-        if (sisApp) sisApp.classList.add('hidden');
-        if (loginScreen) loginScreen.classList.remove('hidden');
-        if (loginPassword) loginPassword.value = '';
-        if (loginMsg) loginMsg.classList.add('hidden');
-        showToast('Anda telah keluar.');
-    }
-
-    // ==========================================
-    // 3. UI DASHBOARD & PROJECT LOGIC
-    // ==========================================
-    function switchView(viewName) {
-        const dashView = document.getElementById('view-dashboard');
-        const projView = document.getElementById('view-projects');
-
-        const btnDash = document.getElementById('nav-dashboard');
-        const btnProj = document.getElementById('nav-projects');
-        const mBtnDash = document.getElementById('mobile-nav-dashboard');
-        const mBtnProj = document.getElementById('mobile-nav-projects');
-
-        if (viewName === 'dashboard') {
-            if (dashView) dashView.classList.remove('hidden');
-            if (projView) projView.classList.add('hidden');
-
-            if (btnDash) btnDash.className = "px-4 py-2 rounded-lg text-xs font-semibold transition-all bg-cyan-500 text-white shadow-sm";
-            if (btnProj) btnProj.className = "px-4 py-2 rounded-lg text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-700 transition-all";
-            if (mBtnDash) mBtnDash.className = "text-xs font-semibold text-cyan-400 py-1";
-            if (mBtnProj) mBtnProj.className = "text-xs font-semibold text-slate-400 py-1";
-            renderDashboard();
-        } else {
-            if (dashView) dashView.classList.add('hidden');
-            if (projView) projView.classList.remove('hidden');
-
-            if (btnProj) btnProj.className = "px-4 py-2 rounded-lg text-xs font-semibold transition-all bg-cyan-500 text-white shadow-sm";
-            if (btnDash) btnDash.className = "px-4 py-2 rounded-lg text-xs font-semibold text-slate-300 hover:text-white hover:bg-slate-700 transition-all";
-            if (mBtnProj) mBtnProj.className = "text-xs font-semibold text-cyan-400 py-1";
-            if (mBtnDash) mBtnDash.className = "text-xs font-semibold text-slate-400 py-1";
-            renderProjectsList();
-        }
-    }
-
-    function renderDashboard() {
-        const statTotal = document.getElementById('stat-total');
-        const statProgress = document.getElementById('stat-progress');
-        const statInspection = document.getElementById('stat-inspection');
-        const statCompleted = document.getElementById('stat-completed');
-
-        if (statTotal) statTotal.textContent = projects.length;
-        if (statProgress) statProgress.textContent = projects.filter(p => p.status === 'In Progress').length;
-        if (statInspection) statInspection.textContent = projects.filter(p => p.status === 'On Inspection').length;
-        if (statCompleted) statCompleted.textContent = projects.filter(p => p.status === 'Completed').length;
-
-        const tbody = document.getElementById('recentProjectsTable');
-        if (!tbody) return;
-        tbody.innerHTML = '';
-
-        projects.slice(-3).reverse().forEach(p => {
-            let badgeClass = 'bg-amber-50 text-amber-700 border-amber-200';
-            if (p.status === 'Completed') badgeClass = 'bg-emerald-50 text-emerald-700 border-emerald-200';
-            if (p.status === 'On Inspection') badgeClass = 'bg-indigo-50 text-indigo-700 border-indigo-200';
-
-            tbody.innerHTML += `
-                <tr class="hover:bg-slate-50/80 transition-colors">
-                    <td class="py-3 px-3 font-bold text-slate-900">${p.unitName}</td>
-                    <td class="py-3 px-3 text-slate-600">${p.unitType} <span class="text-[10px] text-slate-400 block">${p.unitNumber}</span></td>
-                    <td class="py-3 px-3"><button onclick="previewDoc('${p.documents.wo}')" class="text-cyan-600 hover:underline font-mono">${p.documents.wo}</button></td>
-                    <td class="py-3 px-3"><span class="px-2.5 py-1 rounded-full text-[10px] font-bold border ${badgeClass}">${p.status}</span></td>
-                    <td class="py-3 px-3 text-right">
-                        <button onclick="openTimeline('${p.id}')" class="px-3 py-1 bg-slate-900 text-white rounded-lg hover:bg-slate-800 text-[11px] font-bold">Detail</button>
-                    </td>
-                </tr>
-            `;
-        });
-    }
-
-    function renderProjectsList(filteredList = projects) {
-        const container = document.getElementById('projectListContainer');
-        if (!container) return;
-        container.innerHTML = '';
-
-        if (filteredList.length === 0) {
-            container.innerHTML = `<div class="bg-white p-8 rounded-2xl text-center text-slate-400 text-xs">Tidak ada data proyek yang ditemukan.</div>`;
-            return;
-        }
-
-        filteredList.forEach(p => {
-            let badgeClass = 'bg-amber-50 text-amber-700 border-amber-200';
-            if (p.status === 'Completed') badgeClass = 'bg-emerald-50 text-emerald-700 border-emerald-200';
-            if (p.status === 'On Inspection') badgeClass = 'bg-indigo-50 text-indigo-700 border-indigo-200';
-
-            container.innerHTML += `
-                <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm p-6 space-y-4">
-                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
-                        <div>
-                            <div class="flex items-center space-x-2">
-                                <h3 class="font-black text-slate-900 text-base">${p.unitName}</h3>
-                                <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold border ${badgeClass}">${p.status}</span>
-                            </div>
-                            <p class="text-xs text-slate-500 mt-0.5">${p.unitType} &bull; No. Unit/Serial: <span class="font-mono font-bold text-slate-700">${p.unitNumber}</span></p>
-                        </div>
-                        <div class="flex items-center space-x-2">
-                            <button onclick="openTimeline('${p.id}')" class="px-3.5 py-2 bg-slate-900 text-white rounded-xl text-xs font-bold hover:bg-slate-800 shadow-sm">
-                                <i class="fa-solid fa-timeline me-1.5 text-cyan-400"></i> Kelola Proses &amp; Timeline
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Dokumen Acuan -->
-                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 bg-slate-50 p-3.5 rounded-xl border border-slate-100 text-xs">
-                        <div>
-                            <span class="text-[10px] text-slate-400 font-bold block uppercase">Work Order</span>
-                            <button onclick="previewDoc('${p.documents.wo}')" class="font-mono text-cyan-600 hover:underline font-semibold truncate block w-full text-left">${p.documents.wo}</button>
-                        </div>
-                        <div>
-                            <span class="text-[10px] text-slate-400 font-bold block uppercase">Drawing</span>
-                            <button onclick="previewDoc('${p.documents.drawing}')" class="font-mono text-cyan-600 hover:underline font-semibold truncate block w-full text-left">${p.documents.drawing}</button>
-                        </div>
-                        <div>
-                            <span class="text-[10px] text-slate-400 font-bold block uppercase">Hand Over Memo</span>
-                            <button onclick="previewDoc('${p.documents.handover}')" class="font-mono text-cyan-600 hover:underline font-semibold truncate block w-full text-left">${p.documents.handover}</button>
-                        </div>
-                        <div>
-                            <span class="text-[10px] text-slate-400 font-bold block uppercase">Bill of Material</span>
-                            <button onclick="previewDoc('${p.documents.bom}')" class="font-mono text-cyan-600 hover:underline font-semibold truncate block w-full text-left">${p.documents.bom}</button>
-                        </div>
-                    </div>
-                </div>
-            `;
-        });
-    }
-
-    function filterProjects() {
-        const searchInput = document.getElementById('searchInput');
-        const filterStatus = document.getElementById('filterStatus');
-        if (!searchInput || !filterStatus) return;
-
-        const keyword = searchInput.value.toLowerCase();
-        const statusFilter = filterStatus.value;
-
-        const filtered = projects.filter(p => {
-            const matchKeyword = p.unitName.toLowerCase().includes(keyword) ||
-                                 p.unitType.toLowerCase().includes(keyword) ||
-                                 p.unitNumber.toLowerCase().includes(keyword) ||
-                                 p.documents.wo.toLowerCase().includes(keyword);
-            const matchStatus = (statusFilter === 'ALL' || p.status === statusFilter);
-            return matchKeyword && matchStatus;
-        });
-
-        renderProjectsList(filtered);
-    }
-
-    function handleAddProject(e) {
-        e.preventDefault();
-        const newUnitName = document.getElementById('newUnitName');
-        const newUnitType = document.getElementById('newUnitType');
-        const newUnitNumber = document.getElementById('newUnitNumber');
-        const docWO = document.getElementById('docWO');
-        const docDrawing = document.getElementById('docDrawing');
-        const docHandover = document.getElementById('docHandover');
-        const docBOM = document.getElementById('docBOM');
-
-        if (!newUnitName || !newUnitType || !newUnitNumber) return;
-
-        const newProj = {
-            id: "PRJ-00" + (projects.length + 1),
-            unitName: newUnitName.value,
-            unitType: newUnitType.value,
-            unitNumber: newUnitNumber.value,
-            status: "Not Started",
-            documents: {
-                wo: (docWO && docWO.value) ? docWO.value : "WO-DRAFT.pdf",
-                drawing: (docDrawing && docDrawing.value) ? docDrawing.value : "DWG-DRAFT.pdf",
-                handover: (docHandover && docHandover.value) ? docHandover.value : "HOM-DRAFT.pdf",
-                bom: (docBOM && docBOM.value) ? docBOM.value : "BOM-DRAFT.pdf"
-            },
-            processes: {
-                komponen: { status: "Pending", files: [] },
-                fabrikasi: { status: "Pending", files: [] },
-                painting: { status: "Pending", files: [] }
-            }
-        };
-
-        projects.push(newProj);
-        closeModal('addProjectModal');
-        const form = document.getElementById('addProjectForm');
-        if (form) form.reset();
-        renderDashboard();
-        renderProjectsList();
-        showToast('Proyek unit baru berhasil ditambahkan!');
-    }
-
-    function openModal(modalId) {
-        const m = document.getElementById(modalId);
-        if (m) m.classList.remove('hidden');
-    }
-
-    function closeModal(modalId) {
-        const m = document.getElementById(modalId);
-        if (m) m.classList.add('hidden');
-    }
-
-    function previewDoc(docName) {
-        const previewDocName = document.getElementById('previewDocName');
-        if (previewDocName) previewDocName.textContent = docName;
-        openModal('previewModal');
-    }
-
-    function openTimeline(projectId) {
-        const p = projects.find(item => item.id === projectId);
-        if (!p) return;
-
-        const timelineUnitName = document.getElementById('timelineUnitName');
-        const timelineUnitMeta = document.getElementById('timelineUnitMeta');
-        if (timelineUnitName) timelineUnitName.textContent = p.unitName;
-        if (timelineUnitMeta) timelineUnitMeta.textContent = `${p.unitType} — ${p.unitNumber}`;
-
-        const container = document.getElementById('timelineContainer');
-        if (!container) return;
-        container.innerHTML = '';
-
-        const stages = [
-            { key: 'komponen', label: '1. Pengadaan & Pengecekan Komponen' },
-            { key: 'fabrikasi', label: '2. Proses Fabrikasi & Assembly' },
-            { key: 'painting', label: '3. Painting, Finishing & QC Final' }
-        ];
-
-        stages.forEach((st) => {
-            const stageData = p.processes[st.key];
-            let statusColor = 'bg-slate-200 text-slate-600';
-            if (stageData.status === 'Completed') statusColor = 'bg-emerald-100 text-emerald-700';
-            if (stageData.status === 'In Progress') statusColor = 'bg-amber-100 text-amber-700';
-
-            let filesHtml = stageData.files.map(f => `
-                <div class="flex items-center justify-between bg-slate-50 px-3 py-2 rounded-lg border border-slate-200 text-xs mt-2">
-                    <span class="font-medium text-slate-700"><i class="fa-solid fa-file-arrow-down me-1.5 text-cyan-600"></i> ${f.name} <span class="text-[10px] text-slate-400">(${f.type})</span></span>
-                    <button onclick="previewDoc('${f.name}')" class="text-cyan-600 hover:underline font-bold">Lihat</button>
-                </div>
-            `).join('');
-
-            if (stageData.files.length === 0) {
-                filesHtml = `<p class="text-[11px] text-slate-400 italic mt-2">Belum ada lampiran file pada tahap ini.</p>`;
-            }
-
-            container.innerHTML += `
-                <div class="relative pl-8 space-y-2">
-                    <div class="absolute left-2.5 -translate-x-1/2 w-3 h-3 rounded-full bg-cyan-600 border-2 border-white ring-4 ring-cyan-50"></div>
-                    <div class="flex items-center justify-between">
-                        <h4 class="font-bold text-slate-900 text-xs">${st.label}</h4>
-                        <span class="px-2 py-0.5 rounded-full text-[10px] font-bold ${statusColor}">${stageData.status}</span>
-                    </div>
-                    <div class="bg-white p-4 rounded-xl border border-slate-200/80 shadow-sm space-y-2">
-                        ${filesHtml}
-                        <div class="pt-2 flex justify-end">
-                            <button onclick="openUploadModal('${p.id}', '${st.key}', '${st.label}')" class="text-xs bg-cyan-50 hover:bg-cyan-100 text-cyan-700 font-bold px-3 py-1.5 rounded-lg transition-colors">
-                                <i class="fa-solid fa-plus me-1"></i> Tambah Lampiran / Update
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `;
-        });
-
-        openModal('detailTimelineModal');
-    }
-
-    function openUploadModal(projectId, stageKey, stageLabel) {
-        const upProjId = document.getElementById('uploadProjectId');
-        const upStageKey = document.getElementById('uploadStageKey');
-        const upModalTitle = document.getElementById('uploadModalTitle');
-
-        if (upProjId) upProjId.value = projectId;
-        if (upStageKey) upStageKey.value = stageKey;
-        if (upModalTitle) upModalTitle.textContent = `Upload Lampiran: ${stageLabel}`;
-        openModal('uploadStageModal');
-    }
-
-    function handleStageUpload(e) {
-        e.preventDefault();
-        const projIdEl = document.getElementById('uploadProjectId');
-        const stageKeyEl = document.getElementById('uploadStageKey');
-        const attNameEl = document.getElementById('attachmentName');
-        const attTypeEl = document.getElementById('attachmentType');
-        const stStatusEl = document.getElementById('stageStatusUpdate');
-
-        if (!projIdEl || !stageKeyEl || !attNameEl || !attTypeEl || !stStatusEl) return;
-
-        const projId = projIdEl.value;
-        const stageKey = stageKeyEl.value;
-        const attName = attNameEl.value;
-        const attType = attTypeEl.value;
-        const stStatus = stStatusEl.value;
-
-        const p = projects.find(item => item.id === projId);
-        if (p) {
-            p.processes[stageKey].status = stStatus;
-            p.processes[stageKey].files.push({ name: attName, type: attType });
-
-            const allStages = ['komponen', 'fabrikasi', 'painting'];
-            const completedCount = allStages.filter(s => p.processes[s].status === 'Completed').length;
-            if (completedCount === 3) p.status = 'Completed';
-            else if (completedCount > 0) p.status = 'In Progress';
-
-            closeModal('uploadStageModal');
-            const form = document.getElementById('uploadStageForm');
-            if (form) form.reset();
-            openTimeline(projId);
-            renderDashboard();
-            renderProjectsList();
-            showToast('Lampiran dan status tahap berhasil diperbarui!');
-        }
-    }
-
-    function showToast(msg) {
-        const toast = document.getElementById('toast');
-        const toastMsg = document.getElementById('toastMsg');
-        if (!toast || !toastMsg) return;
-
-        toastMsg.textContent = msg;
-        toast.classList.remove('translate-y-20', 'opacity-0');
-        setTimeout(() => {
-            toast.classList.add('translate-y-20', 'opacity-0');
-        }, 3500);
-    }
+/* =========================
+   KONFIGURASI SUPABASE
+   ========================= */
+const SUPABASE_URL = 'https://maveqvmzydqvroohepum.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1hdmVxdm16eWRxdnJvb2hlcHVtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMwMjc2MTcsImV4cCI6MjEwODYwMzYxN30.0iJjNR55IdQJ0ewUQnf-ZmbY7bvFJdq241g-cF_Y_LE';
+
+let supabase = null;
+let recoveryMode = false;
+let toastTimer = null;
+
+try {
+ if (window.supabase && typeof window.supabase.createClient === 'function') {
+  supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+   auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true
+   }
+  });
+ }
+} catch (error) {
+ console.error('Supabase initialization error:', error);
+}
+
+/* =========================
+   DATA PROYEK DEMO
+   Catatan: data ini tersimpan
+   sementara di memori browser.
+   ========================= */
+let projects = [
+ {
+  id:'PRJ-001',unitName:'Hoist Crane Structure 10 Ton',unitType:'Heavy Equipment',
+  unitNumber:'CRN-2026-A01',status:'In Progress',
+  documents:{wo:'WO-2026-CRN01.pdf',drawing:'DWG-CRN10T-REV2.pdf',handover:'HOM-CRN-01.pdf',bom:'BOM-CRN-10T.pdf'},
+  processes:{
+   komponen:{status:'Completed',files:[{name:'Sertifikat Steel Plate SS400.pdf',type:'Dokumen PDF'}]},
+   fabrikasi:{status:'In Progress',files:[{name:'Laporan Pengelasan Structure.pdf',type:'Laporan QC'}]},
+   painting:{status:'Pending',files:[]}
+  }
+ },
+ {
+  id:'PRJ-002',unitName:'Conveyor Belt System Line B',unitType:'Custom Conveyor Unit',
+  unitNumber:'CNV-2026-B05',status:'Completed',
+  documents:{wo:'WO-2026-CNV05.pdf',drawing:'DWG-CNV-LINEB.pdf',handover:'HOM-CNV-FINAL.pdf',bom:'BOM-CNV-FULL.pdf'},
+  processes:{
+   komponen:{status:'Completed',files:[{name:'Checklist Roller & Motor.pdf',type:'Dokumen PDF'}]},
+   fabrikasi:{status:'Completed',files:[{name:'Foto Fabrikasi Frame.jpg',type:'Foto Bukti'}]},
+   painting:{status:'Completed',files:[{name:'Laporan Ketebalan Cat QC.pdf',type:'Laporan QC'}]}
+  }
+ }
+];
+
+const stages = [
+ {key:'komponen',label:'1. Pengadaan & Pengecekan Komponen'},
+ {key:'fabrikasi',label:'2. Proses Fabrikasi & Assembly'},
+ {key:'painting',label:'3. Painting, Finishing & QC Final'}
+];
+
+function $(id){return document.getElementById(id);}
+
+function showMessage(element, message, success=false) {
+ if (!element) return;
+ element.textContent = message;
+ element.className = 'text-xs font-medium p-3 rounded-xl ' +
+  (success ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+           : 'bg-rose-50 text-rose-700 border border-rose-200');
+ element.classList.remove('hidden');
+}
+
+function clearMessage(element) {
+ if (!element) return;
+ element.textContent = '';
+ element.classList.add('hidden');
+}
+
+function setBusy(button, busy, busyText, normalText) {
+ if (!button) return;
+ button.disabled = busy;
+ button.textContent = busy ? busyText : normalText;
+}
+
+function showLoginMessage(message, success=false) {
+ showMessage($('loginMessage'), message, success);
+}
+
+function setRecoveryView(enabled) {
+ recoveryMode = enabled;
+ $('loginForm').classList.toggle('hidden', enabled);
+ $('resetPasswordForm').classList.toggle('hidden', !enabled);
+ $('loginSubtitle').textContent = enabled
+  ? 'Silakan buat password baru untuk akun Anda.'
+  : 'Silakan masuk untuk membuka dashboard.';
+ clearMessage($('loginMessage'));
+ clearMessage($('resetMessage'));
+}
+
+function appLoginSuccess(email) {
+ $('loginScreen').classList.add('hidden');
+ $('sisApp').classList.remove('hidden');
+ $('sisApp').classList.add('flex');
+ $('sisUserEmail').textContent = email || '';
+ renderDashboard();
+ renderProjectsList();
+}
+
+function appShowLogin() {
+ $('sisApp').classList.add('hidden');
+ $('sisApp').classList.remove('flex');
+ $('loginScreen').classList.remove('hidden');
+ $('loginPassword').value = '';
+ clearMessage($('loginMessage'));
+}
+
+/* =========================
+   LOGIN
+   ========================= */
+$('loginForm').addEventListener('submit', async function(event) {
+ event.preventDefault();
+ clearMessage($('loginMessage'));
+
+ const email = $('loginEmail').value.trim();
+ const password = $('loginPassword').value;
+ const button = $('loginSubmit');
+
+ if (!supabase) {
+  showLoginMessage('Supabase tidak berhasil terhubung. Periksa koneksi internet dan konfigurasi Supabase.');
+  return;
+ }
+
+ if (!email || !password) {
+  showLoginMessage('Email dan password wajib diisi.');
+  return;
+ }
+
+ setBusy(button, true, 'Memproses...', 'Masuk');
+
+ try {
+  const {data, error} = await supabase.auth.signInWithPassword({email, password});
+
+  if (error) {
+   console.error('Login error:', error);
+   const message = error.message || '';
+   if (/invalid login credentials/i.test(message)) {
+    showLoginMessage('Email atau password salah. Periksa kembali atau gunakan Lupa Sandi.');
+   } else if (/email not confirmed/i.test(message)) {
+    showLoginMessage('Email belum dikonfirmasi. Hubungi administrator Supabase.');
+   } else {
+    showLoginMessage('Login gagal: ' + message);
+   }
+   return;
+  }
+
+  if (data && data.user) {
+   appLoginSuccess(data.user.email);
+  } else {
+   showLoginMessage('Login belum berhasil. Silakan coba kembali.');
+  }
+ } catch (error) {
+  console.error('Login exception:', error);
+  showLoginMessage('Terjadi kesalahan saat login. Periksa koneksi internet lalu coba kembali.');
+ } finally {
+  setBusy(button, false, 'Memproses...', 'Masuk');
+ }
+});
+
+/* =========================
+   LUPA PASSWORD
+   ========================= */
+$('forgotPasswordButton').addEventListener('click', async function() {
+ clearMessage($('loginMessage'));
+
+ const email = $('loginEmail').value.trim();
+
+ if (!email) {
+  showLoginMessage('Masukkan alamat email pada kolom Email terlebih dahulu.');
+  $('loginEmail').focus();
+  return;
+ }
+
+ if (!$('loginEmail').checkValidity()) {
+  showLoginMessage('Format email belum benar. Periksa kembali alamat email Anda.');
+  $('loginEmail').focus();
+  return;
+ }
+
+ if (!supabase) {
+  showLoginMessage('Supabase tidak berhasil terhubung. Periksa konfigurasi dan koneksi internet.');
+  return;
+ }
+
+ const button = $('forgotPasswordButton');
+ button.disabled = true;
+ button.textContent = 'Mengirim tautan...';
+
+ try {
+  const redirectUrl = window.location.origin + window.location.pathname;
+  const {error} = await supabase.auth.resetPasswordForEmail(email, {
+   redirectTo: redirectUrl
+  });
+
+  if (error) {
+   console.error('Password reset error:', error);
+   showLoginMessage('Gagal mengirim tautan reset: ' + error.message);
+  } else {
+   showLoginMessage('Jika email tersebut terdaftar, tautan pemulihan akan dikirim. Periksa Inbox dan folder Spam.', true);
+  }
+ } catch (error) {
+  console.error('Password reset exception:', error);
+  showLoginMessage('Terjadi kesalahan saat meminta reset password. Silakan coba kembali.');
+ } finally {
+  button.disabled = false;
+  button.textContent = 'Lupa Sandi?';
+ }
+});
+
+/* =========================
+   SIMPAN PASSWORD BARU
+   ========================= */
+$('resetPasswordForm').addEventListener('submit', async function(event) {
+ event.preventDefault();
+ clearMessage($('resetMessage'));
+
+ const password = $('newPassword').value;
+ const confirmPassword = $('confirmPassword').value;
+ const button = $('resetSubmit');
+
+ if (password.length < 8) {
+  showMessage($('resetMessage'), 'Password harus memiliki minimal 8 karakter.');
+  return;
+ }
+
+ if (password !== confirmPassword) {
+  showMessage($('resetMessage'), 'Konfirmasi password tidak sama.');
+  return;
+ }
+
+ if (!supabase) {
+  showMessage($('resetMessage'), 'Supabase tidak berhasil terhubung.');
+  return;
+ }
+
+ setBusy(button, true, 'Menyimpan...', 'Simpan Password Baru');
+
+ try {
+  const {data: sessionData, error: sessionError} = await supabase.auth.getSession();
+
+  if (sessionError || !sessionData.session) {
+   showMessage($('resetMessage'), 'Sesi pemulihan tidak valid atau sudah kedaluwarsa. Minta tautan reset baru.');
+   return;
+  }
+
+  const {error} = await supabase.auth.updateUser({password});
+
+  if (error) {
+   console.error('Update password error:', error);
+   showMessage($('resetMessage'), 'Password gagal diperbarui: ' + error.message);
+   return;
+  }
+
+  await supabase.auth.signOut();
+  setRecoveryView(false);
+  $('loginPassword').value = '';
+  showLoginMessage('Password berhasil diperbarui. Silakan login menggunakan password baru.', true);
+ } catch (error) {
+  console.error('Update password exception:', error);
+  showMessage($('resetMessage'), 'Terjadi kesalahan saat memperbarui password. Coba kembali.');
+ } finally {
+  setBusy(button, false, 'Menyimpan...', 'Simpan Password Baru');
+ }
+});
+
+$('backToLoginButton').addEventListener('click', async function() {
+ if (supabase) {
+  try { await supabase.auth.signOut(); } catch (error) { console.error(error); }
+ }
+ setRecoveryView(false);
+ appShowLogin();
+});
+
+$('logoutButton').addEventListener('click', logoutSIS);
+
+async function logoutSIS() {
+ if (supabase) {
+  try {
+   const {error} = await supabase.auth.signOut();
+   if (error) console.error('Logout error:', error);
+  } catch (error) {
+   console.error('Logout exception:', error);
+  }
+ }
+ appShowLogin();
+ showToast('Anda telah keluar.');
+}
+
+/* Pantau sesi dan tautan pemulihan dari Supabase */
+if (supabase) {
+ supabase.auth.onAuthStateChange((event, session) => {
+  if (event === 'PASSWORD_RECOVERY') {
+   setRecoveryView(true);
+   $('loginScreen').classList.remove('hidden');
+   $('sisApp').classList.add('hidden');
+   $('sisApp').classList.remove('flex');
+   return;
+  }
+
+  if (event === 'SIGNED_OUT') {
+   appShowLogin();
+   return;
+  }
+
+  if (session && session.user && !recoveryMode) {
+   appLoginSuccess(session.user.email);
+  }
+ });
+
+ window.addEventListener('load', async () => {
+  try {
+   const {data, error} = await supabase.auth.getSession();
+   if (error) console.error('Session check error:', error);
+
+   const hash = window.location.hash || '';
+   const params = new URLSearchParams(hash.replace(/^#/, ''));
+   const isRecovery = params.get('type') === 'recovery';
+
+   if (isRecovery) {
+    setRecoveryView(true);
+    $('loginScreen').classList.remove('hidden');
+    $('sisApp').classList.add('hidden');
+    $('sisApp').classList.remove('flex');
+   } else if (data.session && data.session.user) {
+    appLoginSuccess(data.session.user.email);
+   } else {
+    appShowLogin();
+   }
+  } catch (error) {
+   console.error('Session initialization error:', error);
+   appShowLogin();
+  }
+ });
+} else {
+ window.addEventListener('load', () => {
+  showLoginMessage('Supabase belum dapat dimuat. Periksa koneksi internet atau konfigurasi Supabase.');
+ });
+}
+
+/* =========================
+   DASHBOARD DAN PROYEK
+   ========================= */
+function switchView(view) {
+ const dashboard = view === 'dashboard';
+ $('view-dashboard').classList.toggle('hidden', !dashboard);
+ $('view-projects').classList.toggle('hidden', dashboard);
+
+ $('nav-dashboard').className = 'px-3 py-2 rounded-lg text-xs font-semibold ' + (dashboard ? 'bg-cyan-500 text-white' : 'text-slate-300');
+ $('nav-projects').className = 'px-3 py-2 rounded-lg text-xs font-semibold ' + (!dashboard ? 'bg-cyan-500 text-white' : 'text-slate-300');
+
+ if (dashboard) renderDashboard();
+ else renderProjectsList();
+}
+
+function statusClass(status) {
+ if (status === 'Completed') return 'bg-emerald-100 text-emerald-700';
+ if (status === 'On Inspection') return 'bg-indigo-100 text-indigo-700';
+ if (status === 'In Progress') return 'bg-amber-100 text-amber-700';
+ return 'bg-slate-100 text-slate-600';
+}
+
+function escapeHTML(value) {
+ return String(value ?? '').replace(/[&<>"']/g, char => ({
+  '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+ })[char]);
+}
+
+function renderDashboard() {
+ $('stat-total').textContent = projects.length;
+ $('stat-progress').textContent = projects.filter(p => p.status === 'In Progress').length;
+ $('stat-inspection').textContent = projects.filter(p => p.status === 'On Inspection').length;
+ $('stat-completed').textContent = projects.filter(p => p.status === 'Completed').length;
+
+ const tbody = $('recentProjectsTable');
+ tbody.innerHTML = '';
+
+ projects.slice(-3).reverse().forEach(p => {
+  tbody.insertAdjacentHTML('beforeend', `
+   <tr class="border-b hover:bg-slate-50">
+    <td class="p-3 font-bold">${escapeHTML(p.unitName)}</td>
+    <td class="p-3">${escapeHTML(p.unitType)}<br><span class="text-slate-400">${escapeHTML(p.unitNumber)}</span></td>
+    <td class="p-3">${escapeHTML(p.documents.wo)}</td>
+    <td class="p-3"><span class="px-2 py-1 rounded-full ${statusClass(p.status)}">${escapeHTML(p.status)}</span></td>
+    <td class="p-3"><button onclick="openTimeline('${p.id}')" class="bg-slate-900 text-white rounded-lg px-3 py-2">Detail</button></td>
+   </tr>`);
+ });
+}
+
+function renderProjectsList(list = projects) {
+ const container = $('projectListContainer');
+ container.innerHTML = '';
+
+ if (!list.length) {
+  container.innerHTML = '<div class="bg-white p-8 rounded-2xl text-center text-slate-400 text-xs">Tidak ada proyek ditemukan.</div>';
+  return;
+ }
+
+ list.forEach(p => {
+  const docs = [
+   ['Work Order',p.documents.wo],['Drawing',p.documents.drawing],
+   ['Hand Over Memo',p.documents.handover],['Bill of Material',p.documents.bom]
+  ];
+
+  container.insertAdjacentHTML('beforeend', `
+   <article class="bg-white rounded-2xl border shadow-sm p-5 space-y-4">
+    <div class="flex flex-wrap items-start justify-between gap-3 border-b pb-4">
+     <div><h3 class="font-black text-slate-900">${escapeHTML(p.unitName)}</h3>
+      <p class="text-xs text-slate-500 mt-1">${escapeHTML(p.unitType)} · ${escapeHTML(p.unitNumber)}</p>
+      <span class="inline-block mt-2 px-2 py-1 rounded-full text-xs ${statusClass(p.status)}">${escapeHTML(p.status)}</span>
+     </div>
+     <button onclick="openTimeline('${p.id}')" class="bg-slate-900 text-white rounded-xl px-4 py-2 text-xs font-bold">Kelola Proses & Timeline</button>
+    </div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+     ${docs.map(([label,name])=>`<div class="bg-slate-50 p-3 rounded-xl"><p class="text-[10px] text-slate-400 font-bold uppercase">${label}</p><p class="text-xs break-words mt-1">${escapeHTML(name)}</p></div>`).join('')}
+    </div>
+   </article>`);
+ });
+}
+
+function filterProjects() {
+ const keyword = $('searchInput').value.toLowerCase().trim();
+ const status = $('filterStatus').value;
+
+ const filtered = projects.filter(p => {
+  const text = [p.unitName,p.unitType,p.unitNumber,p.documents.wo].join(' ').toLowerCase();
+  return text.includes(keyword) && (status === 'ALL' || p.status === status);
+ });
+ renderProjectsList(filtered);
+}
+
+$('addProjectForm').addEventListener('submit', function(event) {
+ event.preventDefault();
+
+ const id = 'PRJ-' + String(Date.now());
+ const project = {
+  id,
+  unitName:$('newUnitName').value.trim(),
+  unitType:$('newUnitType').value.trim(),
+  unitNumber:$('newUnitNumber').value.trim(),
+  status:'Not Started',
+  documents:{
+   wo:$('docWO').value.trim() || 'WO-DRAFT.pdf',
+   drawing:$('docDrawing').value.trim() || 'DWG-DRAFT.pdf',
+   handover:$('docHandover').value.trim() || 'HOM-DRAFT.pdf',
+   bom:$('docBOM').value.trim() || 'BOM-DRAFT.pdf'
+  },
+  processes:{
+   komponen:{status:'Pending',files:[]},
+   fabrikasi:{status:'Pending',files:[]},
+   painting:{status:'Pending',files:[]}
+  }
+ };
+
+ projects.push(project);
+ closeModal('addProjectModal');
+ $('addProjectForm').reset();
+ renderDashboard();
+ renderProjectsList();
+ showToast('Proyek berhasil ditambahkan.');
+});
+
+function openTimeline(projectId) {
+ const p = projects.find(item => item.id === projectId);
+ if (!p) return;
+
+ $('timelineUnitName').textContent = p.unitName;
+ $('timelineUnitMeta').textContent = p.unitType + ' — ' + p.unitNumber;
+
+ const container = $('timelineContainer');
+ container.innerHTML = '';
+
+ stages.forEach(stage => {
+  const data = p.processes[stage.key];
+  const files = data.files.length
+   ? data.files.map(file => `<li class="text-xs bg-slate-50 border rounded-lg p-2 break-words">${escapeHTML(file.name)} <span class="text-slate-400">(${escapeHTML(file.type)})</span></li>`).join('')
+   : '<li class="text-xs text-slate-400 italic">Belum ada lampiran.</li>';
+
+  container.insertAdjacentHTML('beforeend', `
+   <div class="border rounded-xl p-4 space-y-3">
+    <div class="flex flex-wrap justify-between gap-2">
+     <h4 class="font-bold text-sm">${stage.label}</h4>
+     <span class="text-xs px-2 py-1 rounded-full ${statusClass(data.status)}">${escapeHTML(data.status)}</span>
+    </div>
+    <ul class="space-y-2">${files}</ul>
+    <div class="text-right"><button onclick="openUploadModal('${p.id}','${stage.key}')" class="bg-cyan-50 text-cyan-700 px-3 py-2 rounded-lg text-xs font-bold">Tambah Lampiran / Update</button></div>
+   </div>`);
+ });
+
+ openModal('detailTimelineModal');
+}
+
+function openUploadModal(projectId, stageKey) {
+ $('uploadProjectId').value = projectId;
+ $('uploadStageKey').value = stageKey;
+ const stage = stages.find(s => s.key === stageKey);
+ $('uploadModalTitle').textContent = 'Update: ' + (stage ? stage.label : 'Tahap');
+ $('uploadStageForm').reset();
+ openModal('uploadStageModal');
+}
+
+$('uploadStageForm').addEventListener('submit', function(event) {
+ event.preventDefault();
+
+ const project = projects.find(p => p.id === $('uploadProjectId').value);
+ const key = $('uploadStageKey').value;
+ if (!project || !project.processes[key]) return;
+
+ project.processes[key].status = $('stageStatusUpdate').value;
+ project.processes[key].files.push({
+  name:$('attachmentName').value.trim(),
+  type:$('attachmentType').value
+ });
+
+ const statuses = stages.map(s => project.processes[s.key].status);
+ if (statuses.every(status => status === 'Completed')) {
+  project.status = 'Completed';
+ } else if (statuses.includes('On Inspection')) {
+  project.status = 'On Inspection';
+ } else if (statuses.some(status => status === 'In Progress' || status === 'Completed')) {
+  project.status = 'In Progress';
+ } else {
+  project.status = 'Not Started';
+ }
+
+ closeModal('uploadStageModal');
+ renderDashboard();
+ renderProjectsList();
+ openTimeline(project.id);
+ showToast('Tahap proses berhasil diperbarui.');
+});
+
+function openModal(id) {
+ $(id).classList.remove('hidden');
+}
+function closeModal(id) {
+ $(id).classList.add('hidden');
+}
+function showToast(message) {
+ const toast = $('toast');
+ $('toastMsg').textContent = message;
+ toast.classList.remove('hidden');
+ clearTimeout(toastTimer);
+ toastTimer = setTimeout(() => toast.classList.add('hidden'), 3000);
+}
 </script>
 </body>
 </html>
