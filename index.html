@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="id" class="h-full bg-slate-100">
 <head>
@@ -140,6 +139,13 @@ button:disabled{opacity:.6;cursor:wait}
  </div>
 </div>
 <div id="toast" class="fixed bottom-5 right-5 bg-slate-900 text-white px-4 py-3 rounded-xl shadow-xl text-xs hidden z-[60]"><span id="toastMsg"></span></div>
+<button id="aiAssistantOpen" type="button" class="fixed bottom-5 right-5 z-40 rounded-full bg-cyan-600 hover:bg-cyan-700 text-white shadow-xl px-5 py-4 text-sm font-bold"><i class="fa-solid fa-robot mr-2"></i> AI Assistant</button>
+<section id="aiAssistantPanel" class="hidden fixed bottom-24 right-5 z-50 w-[min(92vw,420px)] h-[min(70vh,560px)] bg-white border border-slate-200 rounded-2xl shadow-2xl overflow-hidden flex-col">
+ <header class="bg-slate-900 text-white px-4 py-3 flex items-center justify-between"><div><h2 class="font-bold text-sm"><i class="fa-solid fa-robot text-cyan-300 mr-2"></i> SIS AI Assistant</h2><p class="text-[10px] text-slate-300 mt-1">Asisten operasional · belum mengakses data proyek</p></div><button id="aiAssistantClose" type="button" aria-label="Tutup asisten" class="px-2 py-1 text-lg">×</button></header>
+ <div id="aiAssistantMessages" class="flex-1 overflow-y-auto p-4 space-y-3 bg-slate-50" aria-live="polite"><div class="max-w-[90%] rounded-xl rounded-tl-sm bg-white border p-3 text-xs leading-relaxed">Halo! Saya asisten AI Management Process SIS. Saat ini saya dapat menjawab pertanyaan operasional, tetapi belum membaca data proyek atau melakukan perubahan data.</div></div>
+ <form id="aiAssistantForm" class="border-t bg-white p-3 flex gap-2"><textarea id="aiAssistantInput" rows="2" maxlength="4000" required placeholder="Tulis pertanyaan operasional..." class="min-w-0 flex-1 resize-none border rounded-xl p-3 text-xs focus:outline-none focus:ring-2 focus:ring-cyan-500"></textarea><button id="aiAssistantSend" type="submit" class="self-end bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl px-4 py-3 text-xs font-bold">Kirim</button></form>
+ <p id="aiAssistantStatus" class="hidden px-4 pb-3 text-xs text-rose-600 bg-white"></p>
+</section>
 
 <script>
 (function(){
@@ -543,6 +549,89 @@ function showToast(message){
  clearTimeout(toastTimer);
  toastTimer=setTimeout(()=>toast.classList.add('hidden'),3000);
 }
+
+
+/* AI Assistant: menggunakan sesi login Supabase untuk memanggil Edge Function. */
+const aiOpenButton = $('aiAssistantOpen');
+const aiPanel = $('aiAssistantPanel');
+const aiCloseButton = $('aiAssistantClose');
+const aiForm = $('aiAssistantForm');
+const aiInput = $('aiAssistantInput');
+const aiSendButton = $('aiAssistantSend');
+const aiMessages = $('aiAssistantMessages');
+const aiStatus = $('aiAssistantStatus');
+
+function setAIStatus(message, isError=true) {
+  aiStatus.textContent = message || '';
+  aiStatus.className = (message ? 'px-4 pb-3 text-xs ' : 'hidden px-4 pb-3 text-xs ') +
+    (isError ? 'text-rose-600 bg-white' : 'text-emerald-700 bg-white');
+}
+function addAIMessage(message, fromUser=false) {
+  const bubble = document.createElement('div');
+  bubble.className = 'max-w-[90%] rounded-xl p-3 text-xs leading-relaxed whitespace-pre-wrap break-words ' +
+    (fromUser ? 'ml-auto bg-cyan-600 text-white rounded-tr-sm' : 'bg-white border rounded-tl-sm');
+  bubble.textContent = message;
+  aiMessages.appendChild(bubble);
+  aiMessages.scrollTop = aiMessages.scrollHeight;
+}
+aiOpenButton.addEventListener('click', () => {
+  aiPanel.classList.remove('hidden');
+  aiPanel.classList.add('flex');
+  aiInput.focus();
+});
+aiCloseButton.addEventListener('click', () => {
+  aiPanel.classList.add('hidden');
+  aiPanel.classList.remove('flex');
+});
+aiForm.addEventListener('submit', async (event) => {
+  event.preventDefault();
+  const message = aiInput.value.trim();
+  if (!message) return;
+  if (!supabaseClient) {
+    setAIStatus('Koneksi Supabase belum tersedia.');
+    return;
+  }
+  aiSendButton.disabled = true;
+  aiSendButton.textContent = '...';
+  setAIStatus('');
+  addAIMessage(message, true);
+  aiInput.value = '';
+  try {
+    const { data: sessionData, error: sessionError } = await supabaseClient.auth.getSession();
+    if (sessionError || !sessionData.session) {
+      setAIStatus('Sesi login tidak ditemukan. Silakan login kembali.');
+      addAIMessage('Pesan belum terkirim karena sesi login tidak valid.');
+      return;
+    }
+    const { data, error } = await supabaseClient.functions.invoke('sis_ai_assistant', {
+      body: { message }
+    });
+    if (error) {
+      console.error('AI assistant function error:', error);
+      let detail = error.message || 'Permintaan gagal.';
+      try {
+        if (error.context && typeof error.context.json === 'function') {
+          const payload = await error.context.json();
+          if (payload && payload.error) detail = payload.error;
+        }
+      } catch (_) {}
+      setAIStatus('Asisten AI gagal merespons: ' + detail);
+      return;
+    }
+    if (!data || typeof data.answer !== 'string' || !data.answer.trim()) {
+      setAIStatus((data && data.error) || 'AI tidak mengembalikan jawaban.');
+      return;
+    }
+    addAIMessage(data.answer);
+  } catch (error) {
+    console.error('AI assistant request failed:', error);
+    setAIStatus('Tidak dapat menghubungi AI. Periksa koneksi internet dan status Edge Function.');
+  } finally {
+    aiSendButton.disabled = false;
+    aiSendButton.textContent = 'Kirim';
+    aiInput.focus();
+  }
+});
 
 /* Fungsi yang dipanggil melalui atribut onclick harus tersedia di window. */
 window.switchView=switchView;
