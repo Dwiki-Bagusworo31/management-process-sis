@@ -685,6 +685,11 @@ ${docs.map(([label,key])=>{const d=p.documents[key];const name=typeof d==='strin
    </article>`);
  });
 }
+function normalizeProjectSearch(value){
+ return String(value===null||value===undefined?'':value)
+  .toLocaleLowerCase('id-ID')
+  .trim();
+}
 function projectSearchText(project){
  const values=[
   project.unitName,
@@ -692,8 +697,6 @@ function projectSearchText(project){
   project.unitNumber,
   project.status
  ];
- // Dokumen dapat tersimpan sebagai teks biasa maupun objek {name, path, ...}.
- // Ambil nama/nomor dokumen, bukan mengandalkan konversi objek menjadi "[object Object]".
  const documents=project.documents&&typeof project.documents==='object'?project.documents:{};
  Object.entries(documents).forEach(([key,value])=>{
   values.push(key);
@@ -702,15 +705,14 @@ function projectSearchText(project){
   }else values.push(value);
  });
  return values.filter(value=>value!==null&&value!==undefined)
-  .join(' ')
-  .normalize('NFD').replace(/[\\u0300-\\u036f]/g,'')
-  .toLocaleLowerCase('id-ID');
+  .map(normalizeProjectSearch)
+  .join(' ');
 }
 function filterProjects(){
  const search=$('searchInput');
  const statusSelect=$('filterStatus');
  if(!search||!statusSelect)return;
- const keyword=search.value.trim().normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLocaleLowerCase('id-ID');
+ const keyword=normalizeProjectSearch(search.value);
  const status=statusSelect.value;
  const filtered=projects.filter(project=>{
   const matchesKeyword=!keyword||projectSearchText(project).includes(keyword);
@@ -803,7 +805,7 @@ $('addProjectForm').addEventListener('submit',async function(event){
   closeModal('addProjectModal');
   $('addProjectForm').reset();
   renderDashboard();
-  renderProjectsList();
+  filterProjects();
   showToast('Proyek berhasil disimpan ke database.');
  }catch(error){
   console.error('Save project error:',error);
