@@ -88,6 +88,19 @@ button:disabled{opacity:.6;cursor:wait}
 #projectListContainer article .text-slate-900,#projectListContainer article .text-slate-500{color:#e3eaf2!important}
 #projectListContainer article .bg-slate-50{background:rgba(255,255,255,.06)!important;color:#e3eaf2!important}
 @media(max-width:640px){#view-dashboard>div:first-child:before{right:-48%;top:-12%;width:280px;height:280px}#view-dashboard>div:first-child:after{width:100%}}
+
+/* === FIX KONTRAS MODAL EDIT UNIT PROYEK === */
+#editProjectModal>div{background:#ffffff!important;color:#172033!important;color-scheme:light!important}
+#editProjectModal h3,#editProjectModal label,#editProjectModal p,#editProjectModal span{color:#243247}
+#editProjectModal input:not([type="file"]),#editProjectModal select,#editProjectModal textarea{background:#ffffff!important;color:#172033!important;border:1px solid #cbd5e1!important;caret-color:#0f172a}
+#editProjectModal input::placeholder,#editProjectModal textarea::placeholder{color:#64748b!important;opacity:1}
+#editProjectModal input:focus,#editProjectModal select:focus,#editProjectModal textarea:focus{outline:2px solid rgba(8,145,178,.28)!important;border-color:#0891b2!important}
+#editProjectModal .border-t,#editProjectModal .rounded-xl.border{border-color:#dbe3ed!important}
+#editProjectModal .text-slate-400,#editProjectModal .text-slate-500{color:#64748b!important}
+#editProjectModal button[onclick*="closeModal"]{color:#334155!important}
+#editProjectModal button[data-delete-document]{color:#be123c!important}
+#editProjectModal .bg-cyan-50{background:#ecfeff!important;color:#155e75!important}
+#editProjectModal .bg-rose-50{background:#fff1f2!important;color:#be123c!important}
 </style>
 </head>
 <body class="min-h-screen text-slate-800 antialiased">
