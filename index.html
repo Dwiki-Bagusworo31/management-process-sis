@@ -301,6 +301,7 @@ try{
 }catch(error){console.error('Supabase initialization error:',error);}
 
 let projects=[];
+let currentUserId=null;
 
 const stages=[
  {key:'komponen',label:'1. Pengadaan & Pengecekan Komponen'},
@@ -744,6 +745,7 @@ async function saveStageSchedule(projectId,stageKey){
 function dailyRecordStageLabel(stage){return ({umum:'Aktivitas Umum Unit',komponen:'Komponen',fabrikasi:'Fabrikasi',painting:'Painting'})[stage]||stage;}
 function formatDailyRecordDate(value){if(!value)return '—';const d=new Date(value+'T00:00:00');return isNaN(d.getTime())?value:d.toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'});}
 async function loadUnitDailyRecords(projectId){
+ const {data:{user}}=await supabaseClient.auth.getUser();currentUserId=user?user.id:null;
  const list=$('dailyRecordsList');list.innerHTML='<p class="text-xs text-slate-400">Memuat riwayat...</p>';
  try{
   const {data,error}=await supabaseClient.from('unit_daily_records').select('id,activity_date,stage,activity,progress,issues,next_action,created_by,created_at').eq('project_id',String(projectId)).order('activity_date',{ascending:false}).order('created_at',{ascending:false});
