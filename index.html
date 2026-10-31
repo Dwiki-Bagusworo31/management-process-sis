@@ -220,6 +220,7 @@ button:disabled{opacity:.6;cursor:wait}
     <article class="relative overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm transition hover:-translate-y-0.5 hover:shadow-md"><div class="absolute left-0 top-0 h-full w-1 bg-emerald-500"></div><div class="flex items-start justify-between"><div><p class="text-xs font-semibold text-slate-500">Selesai</p><h3 id="stat-completed" class="mt-3 text-3xl font-extrabold tracking-tight text-emerald-600">0</h3><p class="mt-1 text-[10px] text-slate-400">Unit telah diselesaikan</p></div><span class="flex h-11 w-11 items-center justify-center rounded-xl bg-emerald-50 text-lg text-emerald-600"><i class="fa-solid fa-circle-check"></i></span></div></article>
    </div>
 
+   <section class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm"><div class="flex flex-wrap items-center justify-between gap-3"><div><p class="text-[10px] font-bold uppercase tracking-[0.16em] text-cyan-700">Schedule Performance</p><h3 class="mt-1 text-sm font-extrabold text-slate-900">Kinerja Target &amp; Progres Harian</h3><p class="mt-1 text-[10px] text-slate-500">Perbandingan progres laporan harian dengan progres yang seharusnya dicapai berdasarkan Target Mulai dan Target Selesai.</p></div><div class="flex gap-3 text-[10px] font-semibold"><span class="text-emerald-700">● Sesuai</span><span class="text-rose-700">● Tertinggal</span></div></div><div id="dashboardSchedulePerformance" class="mt-4 space-y-4"><p class="text-xs text-slate-400">Memuat data kinerja jadwal...</p></div></section>
    <div class="grid gap-5 xl:grid-cols-[0.85fr_1.65fr]">
     <section class="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm">
      <div class="flex items-center justify-between gap-3"><div><p class="text-[10px] font-bold uppercase tracking-[0.16em] text-cyan-700">Progress</p><h3 class="mt-1 text-sm font-extrabold text-slate-900">Distribusi Status</h3></div><span class="flex h-9 w-9 items-center justify-center rounded-xl bg-cyan-50 text-cyan-700"><i class="fa-solid fa-chart-pie"></i></span></div>
@@ -621,7 +622,27 @@ function statusClass(status){
 function escapeHTML(value){
  return String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 }
+async function loadDashboardSchedulePerformance(){
+ const container=$('dashboardSchedulePerformance');if(!container)return;
+ if(!projects.length){container.innerHTML='<p class="rounded-xl bg-slate-50 p-4 text-xs text-slate-400">Belum ada unit proyek.</p>';return;}
+ try{
+  const {data,error}=await supabaseClient.from('unit_daily_records').select('project_id,stage,progress,activity_date,created_at').in('project_id',projects.map(p=>String(p.id))).order('activity_date',{ascending:false}).order('created_at',{ascending:false});
+  if(error)throw error;
+  const latest={};(data||[]).forEach(row=>{if(row.progress!==null&&row.progress!==undefined){const key=String(row.project_id)+'|'+row.stage;if(!latest[key])latest[key]=row;}});
+  const now=new Date(),today=[now.getFullYear(),String(now.getMonth()+1).padStart(2,'0'),String(now.getDate()).padStart(2,'0')].join('-');
+  const rows=[];
+  projects.forEach(project=>stages.forEach(stage=>{
+   const d=(project.processes&&project.processes[stage.key])||{},start=d.targetStartDate||d.plannedDate||'',end=d.targetEndDate||'',report=latest[String(project.id)+'|'+stage.key];
+   let expected=null;if(start&&end&&end>=start){const a=new Date(start+'T00:00:00').getTime(),b=new Date(end+'T00:00:00').getTime(),n=new Date(today+'T00:00:00').getTime();expected=b===a?(n>=b?100:0):Math.max(0,Math.min(100,Math.round((n-a)/(b-a)*100)));}
+   const actual=report?Number(report.progress):null,scheduled=!!(start&&end&&end>=start),late=scheduled&&actual!==null&&expected!==null&&actual<expected,color=late?'#e11d48':'#059669',width=actual===null?0:Math.max(0,Math.min(100,actual));
+   const status=scheduled&&actual!==null?(late?'Tertinggal':'Sesuai'):(!scheduled?'Atur Target':'Menunggu Laporan');
+   rows.push('<div class="rounded-xl border border-slate-100 p-3"><div class="flex flex-wrap items-start justify-between gap-2"><div><p class="text-xs font-extrabold text-slate-800">'+escapeHTML(project.unitName)+' · '+escapeHTML(stage.label.replace(/^\\d+\\.\\s*/,''))+'</p><p class="mt-1 text-[10px] text-slate-400">'+(scheduled?formatDailyRecordDate(start)+' – '+formatDailyRecordDate(end):'Target belum lengkap')+'</p></div><span class="rounded-full px-2.5 py-1 text-[10px] font-bold '+(scheduled&&actual!==null?(late?'bg-rose-50 text-rose-700':'bg-emerald-50 text-emerald-700'):'bg-slate-100 text-slate-500')+'">'+status+'</span></div><div class="mt-3 flex items-center justify-between text-[10px] font-semibold text-slate-500"><span>'+(actual===null?'Belum ada laporan':actual+'% aktual')+'</span><span>'+(expected===null?'—':expected+'% seharusnya')+'</span></div><div class="mt-1 h-2.5 overflow-hidden rounded-full bg-slate-100"><div class="h-full rounded-full" style="width:'+width+'%;background:'+color+'"></div></div>'+(report?'<p class="mt-2 text-[10px] text-slate-400">Laporan terakhir: '+escapeHTML(formatDailyRecordDate(report.activity_date))+'</p>':'')+'</div>');
+  }));
+  container.innerHTML=rows.join('')||'<p class="text-xs text-slate-400">Belum ada data progres.</p>';
+ }catch(error){console.error('Dashboard schedule performance error:',error);container.innerHTML='<p class="rounded-xl bg-rose-50 p-3 text-xs text-rose-700">Data kinerja jadwal gagal dimuat: '+escapeHTML(error.message||'Periksa koneksi database.')+'</p>';}
+}
 function renderDashboard(){
+ loadDashboardSchedulePerformance();
  const total=projects.length;
  const counts={
   notStarted:projects.filter(p=>p.status==='Not Started').length,
@@ -822,7 +843,7 @@ function renderProjectCalendar(projectId,year,month){
  const p=projects.find(x=>String(x.id)===String(projectId));if(!p)return;
  $('calendarMonthLabel').textContent=new Date(year,month,1).toLocaleDateString('id-ID',{month:'long',year:'numeric'});
  const grid=$('projectCalendarGrid');grid.innerHTML='';const offset=(new Date(year,month,1).getDay()+6)%7,days=new Date(year,month+1,0).getDate(),events={};
- stages.forEach(st=>{const d=p.processes[st.key]||{},name=st.label.replace(/^\d+\.\s*/,'');[['plannedDate','Target','target'],['actualDate','Realisasi','actual']].forEach(([field,type,kind])=>{if(d[field])(events[d[field]]||(events[d[field]]=[])).push({name,type,kind,status:d.status});});});
+ stages.forEach(st=>{const d=p.processes[st.key]||{},name=st.label.replace(/^\d+\.\s*/,'');[['targetStartDate','Target Mulai','start'],['targetEndDate','Target Selesai','end']].forEach(([field,type,kind])=>{if(d[field])(events[d[field]]||(events[d[field]]=[])).push({name,type,kind,status:d.status});});});
  for(let n=0;n<offset;n++)grid.insertAdjacentHTML('beforeend','<div class="min-h-20 rounded-lg bg-slate-100/70"></div>');
  for(let day=1;day<=days;day++){const key=year+'-'+String(month+1).padStart(2,'0')+'-'+String(day).padStart(2,'0'),items=events[key]||[];
  const content=items.map(e=>{const late=e.kind==='target'&&e.status!=='Completed'&&key<new Date().toLocaleDateString('en-CA');const cls=e.kind==='actual'?'bg-emerald-100 text-emerald-800':late?'bg-rose-100 text-rose-700':'bg-cyan-100 text-cyan-800';return '<div class="mt-1 truncate rounded px-1 py-1 text-left text-[9px] font-semibold '+cls+'" title="'+escapeHTML(e.type+' — '+e.name)+'">'+(e.kind==='actual'?'✓ ':'')+escapeHTML(e.name)+'</div>';}).join('');
@@ -831,7 +852,7 @@ function renderProjectCalendar(projectId,year,month){
 async function saveStageSchedule(projectId,stageKey){
  const p=projects.find(x=>String(x.id)===String(projectId));if(!p)return;
  const next=JSON.parse(JSON.stringify(p.processes||{}));if(!next[stageKey])next[stageKey]={status:'Pending',files:[]};
- next[stageKey].plannedDate=$('schedule_'+stageKey).value||null;next[stageKey].actualDate=$('actual_'+stageKey).value||null;
+ next[stageKey].targetStartDate=$('targetStart_'+stageKey).value||null;next[stageKey].targetEndDate=$('targetEnd_'+stageKey).value||null;
  const btn=$('saveSchedule_'+stageKey);if(btn){btn.disabled=true;btn.textContent='Menyimpan...';}
  try{const {error}=await supabaseClient.from('projects').update({processes:next,updated_at:new Date().toISOString()}).eq('id',p.id);if(error)throw error;p.processes=next;renderProjectCalendar(p.id,activeCalendarYear,activeCalendarMonth);showToast('Jadwal berhasil disimpan.');}
  catch(error){console.error('Save schedule error:',error);showToast('Jadwal gagal disimpan: '+(error.message||'Periksa koneksi.'));}
@@ -869,6 +890,7 @@ $('dailyRecordForm').addEventListener('submit',async function(event){
   if(error)throw error;
   $('dailyRecordActivity').value='';$('dailyRecordProgress').value='';$('dailyRecordIssues').value='';$('dailyRecordNextAction').value='';
   await loadUnitDailyRecords(projectId);
+  renderDashboard();
   showToast('Catatan aktivitas harian berhasil disimpan.');
  }catch(error){console.error('Save daily record error:',error);showToast('Catatan gagal disimpan: '+(error.message||'Periksa koneksi database.'));}
  finally{button.disabled=false;button.innerHTML='<i class="fa-solid fa-plus mr-1"></i> Simpan Catatan Harian';}
@@ -884,7 +906,7 @@ function openTimeline(projectId){
  $('calendarNext').onclick=()=>{activeCalendarMonth++;if(activeCalendarMonth>11){activeCalendarMonth=0;activeCalendarYear++;}renderProjectCalendar(p.id,activeCalendarYear,activeCalendarMonth);};
  const container=$('timelineContainer');container.innerHTML='';
  stages.forEach(st=>{const d=p.processes[st.key],files=d.files.length?d.files.map(file=>'<li class="text-xs bg-slate-50 border rounded-lg p-2 break-words">'+escapeHTML(file.name)+' <span class="text-slate-400">('+escapeHTML(file.type)+')</span></li>').join(''):'<li class="text-xs text-slate-400 italic">Belum ada lampiran.</li>';
- container.insertAdjacentHTML('beforeend',`<div class="border rounded-xl p-4 space-y-3 bg-white text-slate-800"><div class="flex flex-wrap justify-between gap-2"><h4 class="font-bold text-sm">${st.label}</h4><span class="text-xs px-2 py-1 rounded-full ${statusClass(d.status)}">${escapeHTML(d.status)}</span></div><div class="grid sm:grid-cols-2 gap-3"><label class="text-xs font-semibold text-slate-700">Jadwal Target<span class="mt-1 flex gap-2"><input id="schedule_${st.key}" type="date" value="${escapeHTML(d.plannedDate||'')}" class="min-w-0 flex-1 rounded-lg border border-slate-300 bg-white p-2 text-xs text-slate-800"><button type="button" onclick="openCalendarPicker(\'schedule_${st.key}\')" aria-label="Pilih tanggal target" title="Pilih tanggal" class="rounded-lg border border-slate-300 bg-slate-100 px-3 text-slate-700 hover:bg-slate-200"><i class="fa-regular fa-calendar-days"></i></button></span></label><label class="text-xs font-semibold text-slate-700">Tanggal Realisasi<span class="mt-1 flex gap-2"><input id="actual_${st.key}" type="date" value="${escapeHTML(d.actualDate||'')}" class="min-w-0 flex-1 rounded-lg border border-slate-300 bg-white p-2 text-xs text-slate-800"><button type="button" onclick="openCalendarPicker(\'actual_${st.key}\')" aria-label="Pilih tanggal realisasi" title="Pilih tanggal" class="rounded-lg border border-slate-300 bg-slate-100 px-3 text-slate-700 hover:bg-slate-200"><i class="fa-regular fa-calendar-days"></i></button></span></label></div><div class="text-right"><button id="saveSchedule_${st.key}" type="button" onclick="saveStageSchedule('${p.id}','${st.key}')" class="rounded-lg bg-amber-100 px-3 py-2 text-xs font-bold text-amber-900">Simpan Jadwal</button></div><ul class="space-y-2">${files}</ul><div class="text-right"><button onclick="openUploadModal('${p.id}','${st.key}')" class="rounded-lg bg-cyan-50 px-3 py-2 text-xs font-bold text-cyan-700">Tambah Lampiran / Update</button></div></div>`);});
+ container.insertAdjacentHTML('beforeend',`<div class="border rounded-xl p-4 space-y-3 bg-white text-slate-800"><div class="flex flex-wrap justify-between gap-2"><h4 class="font-bold text-sm">${st.label}</h4><span class="text-xs px-2 py-1 rounded-full ${statusClass(d.status)}">${escapeHTML(d.status)}</span></div><div class="grid sm:grid-cols-2 gap-3"><label class="text-xs font-semibold text-slate-700">Target Mulai<span class="mt-1 flex gap-2"><input id="targetStart_${st.key}" type="date" value="${escapeHTML(d.targetStartDate||d.plannedDate||'')}" class="min-w-0 flex-1 rounded-lg border border-slate-300 bg-white p-2 text-xs text-slate-800"><button type="button" onclick="openCalendarPicker(\'targetStart_${st.key}\')" aria-label="Pilih Target Mulai" title="Pilih tanggal" class="rounded-lg border border-slate-300 bg-slate-100 px-3 text-slate-700 hover:bg-slate-200"><i class="fa-regular fa-calendar-days"></i></button></span></label><label class="text-xs font-semibold text-slate-700">Target Selesai<span class="mt-1 flex gap-2"><input id="targetEnd_${st.key}" type="date" value="${escapeHTML(d.targetEndDate||'')}" class="min-w-0 flex-1 rounded-lg border border-slate-300 bg-white p-2 text-xs text-slate-800"><button type="button" onclick="openCalendarPicker(\'targetEnd_${st.key}\')" aria-label="Pilih Target Selesai" title="Pilih tanggal" class="rounded-lg border border-slate-300 bg-slate-100 px-3 text-slate-700 hover:bg-slate-200"><i class="fa-regular fa-calendar-days"></i></button></span></label></div><div class="text-right"><button id="saveSchedule_${st.key}" type="button" onclick="saveStageSchedule('${p.id}','${st.key}')" class="rounded-lg bg-amber-100 px-3 py-2 text-xs font-bold text-amber-900">Simpan Jadwal</button></div><ul class="space-y-2">${files}</ul><div class="text-right"><button onclick="openUploadModal('${p.id}','${st.key}')" class="rounded-lg bg-cyan-50 px-3 py-2 text-xs font-bold text-cyan-700">Tambah Lampiran / Update</button></div></div>`);});
  openModal('detailTimelineModal');
 }
 function openUploadModal(projectId,stageKey){
