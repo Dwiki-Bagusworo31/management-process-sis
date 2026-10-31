@@ -676,13 +676,39 @@ ${docs.map(([label,key])=>{const d=p.documents[key];const name=typeof d==='strin
    </article>`);
  });
 }
+function projectSearchText(project){
+ const values=[
+  project.unitName,
+  project.unitType,
+  project.unitNumber,
+  project.status
+ ];
+ // Dokumen dapat tersimpan sebagai teks biasa maupun objek {name, path, ...}.
+ // Ambil nama/nomor dokumen, bukan mengandalkan konversi objek menjadi "[object Object]".
+ const documents=project.documents&&typeof project.documents==='object'?project.documents:{};
+ Object.entries(documents).forEach(([key,value])=>{
+  values.push(key);
+  if(value&&typeof value==='object'){
+   values.push(value.name,value.file_name,value.filename,value.document_number,value.number,value.path);
+  }else values.push(value);
+ });
+ return values.filter(value=>value!==null&&value!==undefined)
+  .join(' ')
+  .normalize('NFD').replace(/[\\u0300-\\u036f]/g,'')
+  .toLocaleLowerCase('id-ID');
+}
 function filterProjects(){
- const keyword=$('searchInput').value.toLowerCase().trim();
- const status=$('filterStatus').value;
- renderProjectsList(projects.filter(p=>{
-  const text=[p.unitName,p.unitType,p.unitNumber,p.documents.wo].join(' ').toLowerCase();
-  return text.includes(keyword)&&(status==='ALL'||p.status===status);
- }));
+ const search=$('searchInput');
+ const statusSelect=$('filterStatus');
+ if(!search||!statusSelect)return;
+ const keyword=search.value.trim().normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').toLocaleLowerCase('id-ID');
+ const status=statusSelect.value;
+ const filtered=projects.filter(project=>{
+  const matchesKeyword=!keyword||projectSearchText(project).includes(keyword);
+  const matchesStatus=status==='ALL'||project.status===status;
+  return matchesKeyword&&matchesStatus;
+ });
+ renderProjectsList(filtered);
 }
 
 function editProject(id){const p=projects.find(x=>x.id===id);if(!p)return;const docName=k=>{const d=p.documents&&p.documents[k];return typeof d==='string'?d:(d&&d.name)||'';};$('editProjectId').value=p.id;$('editUnitName').value=p.unitName;$('editUnitType').value=p.unitType;$('editUnitNumber').value=p.unitNumber;$('editProjectStatus').value=p.status;$('editDocWO').value=docName('wo');$('editDocHandover').value=docName('handover');$('editDocDrawing').value=docName('drawing');$('editDocBOM').value=docName('bom');openModal('editProjectModal');}
