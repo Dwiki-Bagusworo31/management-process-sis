@@ -170,14 +170,7 @@ try{
  }
 }catch(error){console.error('Supabase initialization error:',error);}
 
-let projects=[
- {id:'PRJ-001',unitName:'Hoist Crane Structure 10 Ton',unitType:'Heavy Equipment',unitNumber:'CRN-2026-A01',status:'In Progress',
-  documents:{wo:'WO-2026-CRN01.pdf',drawing:'DWG-CRN10T-REV2.pdf',handover:'HOM-CRN-01.pdf',bom:'BOM-CRN-10T.pdf'},
-  processes:{komponen:{status:'Completed',files:[{name:'Sertifikat Steel Plate SS400.pdf',type:'Dokumen PDF'}]},fabrikasi:{status:'In Progress',files:[{name:'Laporan Pengelasan Structure.pdf',type:'Laporan QC'}]},painting:{status:'Pending',files:[]}}},
- {id:'PRJ-002',unitName:'Conveyor Belt System Line B',unitType:'Custom Conveyor Unit',unitNumber:'CNV-2026-B05',status:'Completed',
-  documents:{wo:'WO-2026-CNV05.pdf',drawing:'DWG-CNV-LINEB.pdf',handover:'HOM-CNV-FINAL.pdf',bom:'BOM-CNV-FULL.pdf'},
-  processes:{komponen:{status:'Completed',files:[{name:'Checklist Roller & Motor.pdf',type:'Dokumen PDF'}]},fabrikasi:{status:'Completed',files:[{name:'Foto Fabrikasi Frame.jpg',type:'Foto Bukti'}]},painting:{status:'Completed',files:[{name:'Laporan Ketebalan Cat QC.pdf',type:'Laporan QC'}]}}}
-];
+let projects=[];
 
 const stages=[
  {key:'komponen',label:'1. Pengadaan & Pengecekan Komponen'},
@@ -211,13 +204,33 @@ function setRecoveryView(enabled){
  clearMessage($('loginMessage'));
  clearMessage($('resetMessage'));
 }
-function appLoginSuccess(email){
+async function appLoginSuccess(email){
  $('loginScreen').classList.add('hidden');
  $('sisApp').classList.remove('hidden');
  $('sisApp').classList.add('flex');
  $('sisUserEmail').textContent=email||'';
- renderDashboard();
- renderProjectsList();
+
+ try{
+  const {data,error}=await supabaseClient.from('projects').select('*').order('created_at',{ascending:true});
+  if(error)throw error;
+  projects=(data||[]).map(row=>({
+   id:row.id,
+   unitName:row.unit_name,
+   unitType:row.unit_type,
+   unitNumber:row.unit_number,
+   status:row.status,
+   documents:row.documents||{},
+   processes:row.processes||{}
+  }));
+  renderDashboard();
+  renderProjectsList();
+ }catch(error){
+  console.error('Load projects error:',error);
+  projects=[];
+  renderDashboard();
+  renderProjectsList();
+  showToast('Gagal memuat data proyek: '+(error.message||'Periksa koneksi database.'));
+ }
 }
 function appShowLogin(){
  $('sisApp').classList.add('hidden');
@@ -459,8 +472,13 @@ function filterProjects(){
  }));
 }
 
-$('addProjectForm').addEventListener('submit',function(event){
+$('addProjectForm').addEventListener('submit',async function(event){
  event.preventDefault();
+ const button=$('addProjectForm').querySelector('button[type="submit"]');
+ const normalText=button.textContent;
+ button.disabled=true;
+ button.textContent='Menyimpan...';
+
  const project={
   id:'PRJ-'+String(Date.now()),
   unitName:$('newUnitName').value.trim(),
@@ -479,12 +497,32 @@ $('addProjectForm').addEventListener('submit',function(event){
    painting:{status:'Pending',files:[]}
   }
  };
- projects.push(project);
- closeModal('addProjectModal');
- $('addProjectForm').reset();
- renderDashboard();
- renderProjectsList();
- showToast('Proyek berhasil ditambahkan.');
+
+ try{
+  const {error}=await supabaseClient.from('projects').insert({
+   id:project.id,
+   unit_name:project.unitName,
+   unit_type:project.unitType,
+   unit_number:project.unitNumber,
+   status:project.status,
+   documents:project.documents,
+   processes:project.processes
+  });
+  if(error)throw error;
+
+  projects.push(project);
+  closeModal('addProjectModal');
+  $('addProjectForm').reset();
+  renderDashboard();
+  renderProjectsList();
+  showToast('Proyek berhasil disimpan ke database.');
+ }catch(error){
+  console.error('Save project error:',error);
+  showToast('Proyek gagal disimpan: '+(error.message||'Periksa koneksi database.'));
+ }finally{
+  button.disabled=false;
+  button.textContent=normalText;
+ }
 });
 
 function openTimeline(projectId){
@@ -521,23 +559,48 @@ function openUploadModal(projectId,stageKey){
  $('uploadStageKey').value=stageKey;
  openModal('uploadStageModal');
 }
-$('uploadStageForm').addEventListener('submit',function(event){
+$('uploadStageForm').addEventListener('submit',async function(event){
  event.preventDefault();
  const project=projects.find(p=>p.id===$('uploadProjectId').value);
  const key=$('uploadStageKey').value;
  if(!project||!project.processes[key])return;
- project.processes[key].status=$('stageStatusUpdate').value;
- project.processes[key].files.push({name:$('attachmentName').value.trim(),type:$('attachmentType').value});
- const statuses=stages.map(s=>project.processes[s.key].status);
- if(statuses.every(status=>status==='Completed'))project.status='Completed';
- else if(statuses.includes('On Inspection'))project.status='On Inspection';
- else if(statuses.some(status=>status==='In Progress'||status==='Completed'))project.status='In Progress';
- else project.status='Not Started';
- closeModal('uploadStageModal');
- renderDashboard();
- renderProjectsList();
- openTimeline(project.id);
- showToast('Tahap proses berhasil diperbarui.');
+
+ const nextProcesses=JSON.parse(JSON.stringify(project.processes));
+ nextProcesses[key].status=$('stageStatusUpdate').value;
+ nextProcesses[key].files.push({name:$('attachmentName').value.trim(),type:$('attachmentType').value});
+ const statuses=stages.map(s=>nextProcesses[s.key].status);
+ let nextStatus='Not Started';
+ if(statuses.every(status=>status==='Completed'))nextStatus='Completed';
+ else if(statuses.includes('On Inspection'))nextStatus='On Inspection';
+ else if(statuses.some(status=>status==='In Progress'||status==='Completed'))nextStatus='In Progress';
+
+ const button=$('uploadStageForm').querySelector('button[type="submit"]');
+ const normalText=button.textContent;
+ button.disabled=true;
+ button.textContent='Menyimpan...';
+
+ try{
+  const {error}=await supabaseClient.from('projects').update({
+   status:nextStatus,
+   processes:nextProcesses,
+   updated_at:new Date().toISOString()
+  }).eq('id',project.id);
+  if(error)throw error;
+
+  project.processes=nextProcesses;
+  project.status=nextStatus;
+  closeModal('uploadStageModal');
+  renderDashboard();
+  renderProjectsList();
+  openTimeline(project.id);
+  showToast('Tahap proses berhasil disimpan ke database.');
+ }catch(error){
+  console.error('Update project stage error:',error);
+  showToast('Perubahan gagal disimpan: '+(error.message||'Periksa koneksi database.'));
+ }finally{
+  button.disabled=false;
+  button.textContent=normalText;
+ }
 });
 
 function openModal(id){$(id).classList.remove('hidden');}
