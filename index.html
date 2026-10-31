@@ -89,6 +89,14 @@ button:disabled{opacity:.6;cursor:wait}
 #projectListContainer article .bg-slate-50{background:rgba(255,255,255,.06)!important;color:#e3eaf2!important}
 @media(max-width:640px){#view-dashboard>div:first-child:before{right:-48%;top:-12%;width:280px;height:280px}#view-dashboard>div:first-child:after{width:100%}}
 
+/* === KONTRAS INPUT TAMBAH UNIT PROYEK: TEKS KUNING === */
+#addProjectModal>div{background:#10243a!important;color:#f3e5c2!important;border:1px solid rgba(213,177,111,.35)!important}
+#addProjectModal h3,#addProjectModal label,#addProjectModal h4{color:#f3d58e!important}
+#addProjectModal input:not([type="file"]),#addProjectModal select,#addProjectModal textarea{background:#172f49!important;color:#ffdf75!important;border:1px solid rgba(213,177,111,.48)!important;caret-color:#ffdf75!important}
+#addProjectModal input::placeholder,#addProjectModal textarea::placeholder{color:#c5b58e!important;opacity:1}
+#addProjectModal input:focus,#addProjectModal select:focus,#addProjectModal textarea:focus{outline:2px solid rgba(255,213,110,.3)!important;border-color:#f4c95d!important}
+#addProjectModal button[onclick*="closeModal"]{color:#f3e5c2!important}
+#addProjectModal .border-t{border-color:rgba(213,177,111,.25)!important}
 /* === FIX KONTRAS MODAL EDIT UNIT PROYEK === */
 #editProjectModal>div{background:#ffffff!important;color:#172033!important;color-scheme:light!important}
 #editProjectModal h3,#editProjectModal label,#editProjectModal p,#editProjectModal span{color:#243247}
