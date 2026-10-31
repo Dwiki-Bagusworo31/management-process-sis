@@ -238,7 +238,21 @@ button:disabled{opacity:.6;cursor:wait}
 <div id="detailTimelineModal" class="hidden fixed inset-0 z-40 bg-slate-900/60 flex items-center justify-center p-4">
  <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6">
   <div class="flex justify-between mb-5"><div><h3 id="timelineUnitName" class="font-bold"></h3><p id="timelineUnitMeta" class="text-xs text-slate-500"></p></div><button onclick="closeModal('detailTimelineModal')">✕</button></div>
-  <section class="mb-5 rounded-2xl border border-slate-200 bg-slate-50 p-4 space-y-3"><div class="flex flex-wrap items-center justify-between gap-3"><div><h4 class="font-bold text-sm text-slate-800">Kalender Pekerjaan Unit</h4><p class="text-[11px] text-slate-500">Jadwal target dan realisasi setiap tahapan pekerjaan</p></div><div class="flex items-center gap-2"><button type="button" id="calendarPrev" class="rounded-lg border bg-white px-3 py-2 text-slate-700">‹</button><strong id="calendarMonthLabel" class="min-w-32 text-center text-xs text-slate-800"></strong><button type="button" id="calendarNext" class="rounded-lg border bg-white px-3 py-2 text-slate-700">›</button></div></div><div class="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-slate-500"><span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span><span>Min</span></div><div id="projectCalendarGrid" class="grid grid-cols-7 gap-1"></div><div class="flex flex-wrap gap-3 text-[10px] text-slate-600"><span>🔵 Target</span><span>🟢 Realisasi</span><span>🔴 Terlambat</span></div></section><div id="timelineContainer" class="space-y-4"></div>
+  <section class="mb-5 rounded-2xl border border-slate-200 bg-slate-50 p-4 space-y-3"><div class="flex flex-wrap items-center justify-between gap-3"><div><h4 class="font-bold text-sm text-slate-800">Kalender Pekerjaan Unit</h4><p class="text-[11px] text-slate-500">Jadwal target dan realisasi setiap tahapan pekerjaan</p></div><div class="flex items-center gap-2"><button type="button" id="calendarPrev" class="rounded-lg border bg-white px-3 py-2 text-slate-700">‹</button><strong id="calendarMonthLabel" class="min-w-32 text-center text-xs text-slate-800"></strong><button type="button" id="calendarNext" class="rounded-lg border bg-white px-3 py-2 text-slate-700">›</button></div></div><div class="grid grid-cols-7 gap-1 text-center text-[10px] font-bold text-slate-500"><span>Sen</span><span>Sel</span><span>Rab</span><span>Kam</span><span>Jum</span><span>Sab</span><span>Min</span></div><div id="projectCalendarGrid" class="grid grid-cols-7 gap-1"></div><div class="flex flex-wrap gap-3 text-[10px] text-slate-600"><span>🔵 Target</span><span>🟢 Realisasi</span><span>🔴 Terlambat</span></div></section><section class="mb-5 rounded-2xl border border-slate-200 bg-white p-4 space-y-4">
+ <div class="flex flex-wrap items-center justify-between gap-2"><div><h4 class="font-bold text-sm text-slate-800">Catatan Aktivitas Harian</h4><p class="text-[11px] text-slate-500">Tambahkan laporan pekerjaan setiap hari. Semua catatan tersimpan sebagai riwayat.</p></div><span id="dailyRecordCount" class="rounded-full bg-cyan-50 px-3 py-1 text-[10px] font-bold text-cyan-800">0 catatan</span></div>
+ <form id="dailyRecordForm" class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+  <input id="dailyRecordProjectId" type="hidden">
+  <label class="text-xs font-semibold text-slate-700">Tanggal laporan<input id="dailyRecordDate" type="date" required class="mt-1 w-full rounded-lg border border-slate-300 bg-white p-2.5 text-xs text-slate-800"></label>
+  <label class="text-xs font-semibold text-slate-700">Tahapan pekerjaan<select id="dailyRecordStage" required class="mt-1 w-full rounded-lg border border-slate-300 bg-white p-2.5 text-xs text-slate-800"><option value="umum">Aktivitas Umum Unit</option><option value="komponen">Komponen</option><option value="fabrikasi">Fabrikasi</option><option value="painting">Painting</option></select></label>
+  <label class="text-xs font-semibold text-slate-700 sm:col-span-2">Aktivitas hari ini<textarea id="dailyRecordActivity" required rows="3" maxlength="3000" placeholder="Jelaskan pekerjaan yang dilakukan hari ini..." class="mt-1 w-full rounded-lg border border-slate-300 bg-white p-3 text-xs text-slate-800"></textarea></label>
+  <label class="text-xs font-semibold text-slate-700">Progres tahapan (%)<input id="dailyRecordProgress" type="number" min="0" max="100" placeholder="Contoh: 60" class="mt-1 w-full rounded-lg border border-slate-300 bg-white p-2.5 text-xs text-slate-800"></label>
+  <label class="text-xs font-semibold text-slate-700">Kendala / masalah<textarea id="dailyRecordIssues" rows="2" maxlength="2000" placeholder="Tidak ada kendala? Boleh dikosongkan." class="mt-1 w-full rounded-lg border border-slate-300 bg-white p-3 text-xs text-slate-800"></textarea></label>
+  <label class="text-xs font-semibold text-slate-700 sm:col-span-2">Rencana tindak lanjut<textarea id="dailyRecordNextAction" rows="2" maxlength="2000" placeholder="Rencana pekerjaan berikutnya..." class="mt-1 w-full rounded-lg border border-slate-300 bg-white p-3 text-xs text-slate-800"></textarea></label>
+  <div class="sm:col-span-2 flex justify-end"><button id="dailyRecordSubmit" type="submit" class="rounded-xl bg-cyan-700 px-5 py-3 text-xs font-bold text-white hover:bg-cyan-800"><i class="fa-solid fa-plus mr-1"></i> Simpan Catatan Harian</button></div>
+ </form>
+ <div class="border-t border-slate-200 pt-4"><div class="mb-3 flex flex-wrap items-center justify-between gap-2"><h5 class="text-xs font-bold text-slate-800">Riwayat Unit</h5><button type="button" id="refreshDailyRecords" class="text-[11px] font-semibold text-cyan-700"><i class="fa-solid fa-rotate mr-1"></i> Muat ulang</button></div><div id="dailyRecordsList" class="space-y-3"><p class="text-xs text-slate-400">Memuat riwayat...</p></div></div>
+</section>
+<div id="timelineContainer" class="space-y-4"></div>
  </div>
 </div>
 
@@ -727,10 +741,47 @@ async function saveStageSchedule(projectId,stageKey){
  catch(error){console.error('Save schedule error:',error);showToast('Jadwal gagal disimpan: '+(error.message||'Periksa koneksi.'));}
  finally{if(btn){btn.disabled=false;btn.textContent='Simpan Jadwal';}}
 }
+function dailyRecordStageLabel(stage){return ({umum:'Aktivitas Umum Unit',komponen:'Komponen',fabrikasi:'Fabrikasi',painting:'Painting'})[stage]||stage;}
+function formatDailyRecordDate(value){if(!value)return '—';const d=new Date(value+'T00:00:00');return isNaN(d.getTime())?value:d.toLocaleDateString('id-ID',{day:'2-digit',month:'long',year:'numeric'});}
+async function loadUnitDailyRecords(projectId){
+ const list=$('dailyRecordsList');list.innerHTML='<p class="text-xs text-slate-400">Memuat riwayat...</p>';
+ try{
+  const {data,error}=await supabaseClient.from('unit_daily_records').select('id,activity_date,stage,activity,progress,issues,next_action,created_by,created_at').eq('project_id',String(projectId)).order('activity_date',{ascending:false}).order('created_at',{ascending:false});
+  if(error)throw error;
+  $('dailyRecordCount').textContent=(data||[]).length+' catatan';
+  if(!data||!data.length){list.innerHTML='<div class="rounded-xl border border-dashed border-slate-300 p-5 text-center text-xs text-slate-400">Belum ada catatan. Tambahkan update pertama untuk unit ini.</div>';return;}
+  list.innerHTML='';
+  data.forEach(item=>{
+   const progress=item.progress===null||item.progress===undefined?'':('<span class="rounded-full bg-cyan-50 px-2 py-1 text-[10px] font-bold text-cyan-800">Progres '+item.progress+'%</span>');
+   const userLabel=item.created_by===currentUserId?'Anda':'Anggota tim';
+   list.insertAdjacentHTML('beforeend',`<article class="rounded-xl border border-slate-200 bg-slate-50 p-3 space-y-2"><div class="flex flex-wrap items-center justify-between gap-2"><div class="flex flex-wrap items-center gap-2"><strong class="text-xs text-slate-800">${escapeHTML(formatDailyRecordDate(item.activity_date))}</strong><span class="rounded-full bg-slate-200 px-2 py-1 text-[10px] font-semibold text-slate-700">${escapeHTML(dailyRecordStageLabel(item.stage))}</span>${progress}</div><span class="text-[10px] text-slate-500">${escapeHTML(userLabel)} · ${escapeHTML(new Date(item.created_at).toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}))}</span></div><p class="whitespace-pre-wrap text-xs leading-5 text-slate-700">${escapeHTML(item.activity)}</p>${item.issues?'<div class="rounded-lg bg-rose-50 p-2 text-xs text-rose-800"><strong>Kendala:</strong> '+escapeHTML(item.issues)+'</div>':''}${item.next_action?'<div class="rounded-lg bg-emerald-50 p-2 text-xs text-emerald-800"><strong>Tindak lanjut:</strong> '+escapeHTML(item.next_action)+'</div>':''}</article>`);
+  });
+ }catch(error){console.error('Load daily records error:',error);list.innerHTML='<p class="rounded-lg bg-rose-50 p-3 text-xs text-rose-700">Riwayat gagal dimuat: '+escapeHTML(error.message||'Periksa koneksi database.')+'</p>';}
+}
+$('dailyRecordForm').addEventListener('submit',async function(event){
+ event.preventDefault();
+ const button=$('dailyRecordSubmit'),projectId=$('dailyRecordProjectId').value;
+ const activity=$('dailyRecordActivity').value.trim(),progressValue=$('dailyRecordProgress').value;
+ if(!projectId||!activity){showToast('Pilih unit dan isi aktivitas harian.');return;}
+ const {data:{user}}=await supabaseClient.auth.getUser();
+ if(!user){showToast('Sesi login berakhir. Silakan login kembali.');return;}
+ button.disabled=true;button.innerHTML='<i class="fa-solid fa-spinner fa-spin mr-1"></i> Menyimpan...';
+ try{
+  const payload={project_id:String(projectId),activity_date:$('dailyRecordDate').value,stage:$('dailyRecordStage').value,activity,progress:progressValue===''?null:Number(progressValue),issues:$('dailyRecordIssues').value.trim()||null,next_action:$('dailyRecordNextAction').value.trim()||null,created_by:user.id};
+  const {error}=await supabaseClient.from('unit_daily_records').insert(payload);
+  if(error)throw error;
+  $('dailyRecordActivity').value='';$('dailyRecordProgress').value='';$('dailyRecordIssues').value='';$('dailyRecordNextAction').value='';
+  await loadUnitDailyRecords(projectId);
+  showToast('Catatan aktivitas harian berhasil disimpan.');
+ }catch(error){console.error('Save daily record error:',error);showToast('Catatan gagal disimpan: '+(error.message||'Periksa koneksi database.'));}
+ finally{button.disabled=false;button.innerHTML='<i class="fa-solid fa-plus mr-1"></i> Simpan Catatan Harian';}
+});
+$('refreshDailyRecords').addEventListener('click',()=>loadUnitDailyRecords($('dailyRecordProjectId').value));
 function openTimeline(projectId){
  const p=projects.find(x=>String(x.id)===String(projectId));if(!p)return;if(!p.processes)p.processes={};
  stages.forEach(st=>{if(!p.processes[st.key])p.processes[st.key]={status:'Pending',files:[]};if(!Array.isArray(p.processes[st.key].files))p.processes[st.key].files=[];});
  $('timelineUnitName').textContent=p.unitName;$('timelineUnitMeta').textContent=p.unitType+' — '+p.unitNumber;
+ $('dailyRecordProjectId').value=String(p.id);$('dailyRecordDate').value=new Date().toLocaleDateString('en-CA');$('dailyRecordForm').reset();$('dailyRecordProjectId').value=String(p.id);$('dailyRecordDate').value=new Date().toLocaleDateString('en-CA');loadUnitDailyRecords(p.id);
  activeCalendarProjectId=p.id;const now=new Date();activeCalendarYear=now.getFullYear();activeCalendarMonth=now.getMonth();renderProjectCalendar(p.id,activeCalendarYear,activeCalendarMonth);
  $('calendarPrev').onclick=()=>{activeCalendarMonth--;if(activeCalendarMonth<0){activeCalendarMonth=11;activeCalendarYear--;}renderProjectCalendar(p.id,activeCalendarYear,activeCalendarMonth);};
  $('calendarNext').onclick=()=>{activeCalendarMonth++;if(activeCalendarMonth>11){activeCalendarMonth=0;activeCalendarYear++;}renderProjectCalendar(p.id,activeCalendarYear,activeCalendarMonth);};
