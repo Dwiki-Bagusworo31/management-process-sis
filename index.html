@@ -846,7 +846,7 @@ function renderProjectCalendar(projectId,year,month){
  stages.forEach(st=>{const d=p.processes[st.key]||{},name=st.label.replace(/^\d+\.\s*/,'');[['targetStartDate','Target Mulai','start'],['targetEndDate','Target Selesai','end']].forEach(([field,type,kind])=>{if(d[field])(events[d[field]]||(events[d[field]]=[])).push({name,type,kind,status:d.status});});});
  for(let n=0;n<offset;n++)grid.insertAdjacentHTML('beforeend','<div class="min-h-20 rounded-lg bg-slate-100/70"></div>');
  for(let day=1;day<=days;day++){const key=year+'-'+String(month+1).padStart(2,'0')+'-'+String(day).padStart(2,'0'),items=events[key]||[];
- const content=items.map(e=>{const late=e.kind==='target'&&e.status!=='Completed'&&key<new Date().toLocaleDateString('en-CA');const cls=e.kind==='actual'?'bg-emerald-100 text-emerald-800':late?'bg-rose-100 text-rose-700':'bg-cyan-100 text-cyan-800';return '<div class="mt-1 truncate rounded px-1 py-1 text-left text-[9px] font-semibold '+cls+'" title="'+escapeHTML(e.type+' — '+e.name)+'">'+(e.kind==='actual'?'✓ ':'')+escapeHTML(e.name)+'</div>';}).join('');
+ const content=items.map(e=>{const late=e.kind==='end'&&e.status!=='Completed'&&key<new Date().toLocaleDateString('en-CA');const cls=late?'bg-rose-100 text-rose-700':e.kind==='end'?'bg-emerald-100 text-emerald-800':'bg-cyan-100 text-cyan-800';return '<div class="mt-1 truncate rounded px-1 py-1 text-left text-[9px] font-semibold '+cls+'" title="'+escapeHTML(e.type+' — '+e.name)+'">'+(e.kind==='end'?'✓ ':'')+escapeHTML(e.type+' · '+e.name)+'</div>';}).join('');
  grid.insertAdjacentHTML('beforeend','<div class="min-h-20 rounded-lg border border-slate-200 bg-white p-1 '+(key===new Date().toLocaleDateString('en-CA')?'ring-2 ring-amber-400':'')+'"><div class="text-[10px] font-bold text-slate-600">'+day+'</div>'+content+'</div>');}
 }
 async function saveStageSchedule(projectId,stageKey){
@@ -854,7 +854,7 @@ async function saveStageSchedule(projectId,stageKey){
  const next=JSON.parse(JSON.stringify(p.processes||{}));if(!next[stageKey])next[stageKey]={status:'Pending',files:[]};
  next[stageKey].targetStartDate=$('targetStart_'+stageKey).value||null;next[stageKey].targetEndDate=$('targetEnd_'+stageKey).value||null;
  const btn=$('saveSchedule_'+stageKey);if(btn){btn.disabled=true;btn.textContent='Menyimpan...';}
- try{const {error}=await supabaseClient.from('projects').update({processes:next,updated_at:new Date().toISOString()}).eq('id',p.id);if(error)throw error;p.processes=next;renderProjectCalendar(p.id,activeCalendarYear,activeCalendarMonth);showToast('Jadwal berhasil disimpan.');}
+ try{const {error}=await supabaseClient.from('projects').update({processes:next,updated_at:new Date().toISOString()}).eq('id',p.id);if(error)throw error;p.processes=next;renderProjectCalendar(p.id,activeCalendarYear,activeCalendarMonth);renderDashboard();showToast('Target jadwal berhasil disimpan.');}
  catch(error){console.error('Save schedule error:',error);showToast('Jadwal gagal disimpan: '+(error.message||'Periksa koneksi.'));}
  finally{if(btn){btn.disabled=false;btn.textContent='Simpan Jadwal';}}
 }
