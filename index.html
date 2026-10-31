@@ -448,7 +448,7 @@ function renderProjectsList(list=projects){
   return;
  }
  list.forEach(p=>{
-  const docs=[['Work Order',p.documents.wo],['Drawing',p.documents.drawing],['Hand Over Memo',p.documents.handover],['Bill of Material',p.documents.bom]];
+  const docs=[['Work Order','wo'],['Drawing','drawing'],['Hand Over Memo','handover'],['Bill of Material','bom']];
   container.insertAdjacentHTML('beforeend',`
    <article class="bg-white rounded-2xl border shadow-sm p-5 space-y-4">
     <div class="flex flex-wrap items-start justify-between gap-3 border-b pb-4">
